@@ -12,7 +12,17 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0b0b'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='%23fff' text-anchor='middle'%3EАГ%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=Bad+Script&family=Comforter+Brush&display=swap" rel="stylesheet">
+<script>
+/* Рукописный вид: "hand" — шрифты под подпись Алана, "clean" — обычные шрифты.
+   Можно переключить ссылкой: ?font=hand или ?font=clean */
+(function () {
+  var FONT_DEFAULT = "hand";
+  var q = new URLSearchParams(location.search).get("font");
+  var mode = q === "hand" || q === "clean" ? q : FONT_DEFAULT;
+  if (mode === "hand") document.documentElement.classList.add("hand");
+})();
+</script>
 <style>
 :root{
   --bg:#fff; --ink:#0b0b0b; --mute:#6f6f6f; --line:#e6e6e6; --soft:#f4f4f4; --err:#c62828;
@@ -264,6 +274,49 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast button{flex:none;background:none;border:0;padding:0;color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 
+/* ---------- рукописный режим (html.hand) ---------- */
+.logo-img,.foot-sign{display:none}
+html.hand{--display:"Comforter Brush","Bad Script",cursive;--text:"Bad Script","Golos Text",cursive;--mute:#505050}
+html.hand *{font-synthesis:none}
+html.hand body{font-size:18px;line-height:1.6}
+html.hand :is(input,select,textarea,pre){font-family:"Golos Text",system-ui,sans-serif!important}
+html.hand :is(.eyebrow,.facts dt,th,.tag,.btn,.pd-label span,.pd-h,.foot h4,.ticker,.dh h2,.sec-head h2,.split h2,.hero h1,.pd-name){text-transform:none;letter-spacing:0}
+html.hand .logo-text,html.hand .foot-big{display:none}
+html.hand .logo-img{display:block;height:34px;width:auto}
+html.hand .foot-sign{display:block;width:min(100%,960px);height:auto;filter:invert(1);margin:0 0 clamp(40px,6vw,72px)}
+html.hand .hero h1{font-size:clamp(56px,17vw,104px);line-height:.85}
+@media(min-width:900px){html.hand .hero h1{font-size:clamp(84px,8.6vw,144px)}}
+html.hand :is(.sec-head h2,.split h2){font-size:clamp(52px,7.4vw,92px);line-height:.85}
+html.hand .pd-name{font-size:clamp(38px,4.8vw,56px);line-height:.95}
+html.hand .dh h2{font-size:34px;line-height:1}
+html.hand .step b{font-size:34px}
+html.hand .done-num{font-family:var(--text);font-size:30px}
+html.hand .ticker{font-size:15px}
+html.hand .ticker-track{padding:8px 0}
+html.hand .nav a{font-size:17px}
+html.hand .cartbtn{font-size:18px}
+html.hand .eyebrow{font-size:16px}
+html.hand .lead{font-size:20px}
+html.hand .btn{font-size:19px}
+html.hand .facts dt{font-size:14px}
+html.hand .facts dd{font-size:17px}
+html.hand .tag{font-size:14px;padding:3px 10px}
+html.hand :is(.card-name,.card-price){font-size:19px}
+html.hand .card-sizes{font-size:15px;margin-top:-4px}
+html.hand .step h3{font-size:22px}
+html.hand .step p,html.hand .faq details p{font-size:17px}
+html.hand .faq summary{font-size:20px}
+html.hand th{font-size:15px}
+html.hand .tab{font-size:17px}
+html.hand :is(.pd-label span,.pd-h,.foot h4){font-size:15px}
+html.hand .pd-price{font-size:22px}
+html.hand .size{font-size:19px}
+html.hand .specs div{font-size:16px}
+html.hand .pd-desc{font-size:17px}
+html.hand .li-name{font-size:17px}
+html.hand .total{font-size:20px}
+html.hand .f>label{font-size:15px}
+
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -276,7 +329,7 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="#top">АЛАН ГАФАРОВ</a>
+    <a class="logo" href="#top" aria-label="Алан Гафаров"><span class="logo-text">АЛАН ГАФАРОВ</span><img class="logo-img" src="logo.png" alt="" width="1200" height="240"></a>
     <nav class="nav" aria-label="Разделы">
       <a href="#catalog">Каталог</a>
       <a href="#how">Как заказать</a>
@@ -377,6 +430,7 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 <footer class="foot">
   <div class="wrap">
     <p class="foot-big" aria-hidden="true">Алан<br>Гафаров</p>
+    <img class="foot-sign" src="logo.png" alt="" aria-hidden="true" width="1200" height="240">
     <div class="foot-grid">
       <div>
         <h4>Мы в сети</h4>
