@@ -680,13 +680,52 @@ function toast(msg) {
 }
 $("#toastOpen").addEventListener("click", () => { $("#toast").classList.remove("show"); openCart(); });
 
-/* ---------- маскот следит за курсором, моргает и поднимает бровь ---------- */
+/* ---------- маскот следит за курсором, моргает, поднимает бровь и пускает слюну ---------- */
 (function gaze() {
   const box = $("#mascot"), eyes = $("#eyes");
   if (!box || !eyes || reducedMotion) return;
   const irises = $$(".iris", eyes);
   const RANGE = { x: 30, y: 13 };
   let tx = 0, ty = 0, x = 0, y = 0, onScreen = true, lastAim = 0, raf = 0, nextGlance = 0;
+
+  /* слюна тянется из левого уголка рта, капля срывается и падает мимо подбородка */
+  const SPIT = { x: 550, y: 922, restLen: 8, fullLen: 70, restR: 3, fullR: 9.5, grow: 5, hang: .8, gravity: 620, bottom: 1240 };
+  const spit = $("#drool"), spitHi = $("#droolHi"), spitDrop = $("#droolDrop");
+  let spitStart = performance.now() + 800;
+
+  function spitShape(len, r) {
+    const { x: sx, y: sy } = SPIT, ry = r * 1.1, tip = sy + len, cy = tip - ry;
+    spit.setAttribute("d", `M${sx - 2} ${sy}C${sx - 2} ${sy + len * .5} ${sx - r} ${cy - r * .9} ${sx - r} ${cy}` +
+      `A${r} ${ry} 0 0 0 ${sx + r} ${cy}C${sx + r} ${cy - r * .9} ${sx + 2} ${sy + len * .5} ${sx + 2} ${sy}Z`);
+    spitHi.setAttribute("d", r > 4 ? `M${sx + r * .5} ${cy - r * .1}Q${sx + r * .55} ${cy + r * .6} ${sx + r * .05} ${cy + r * .85}` : "");
+  }
+
+  function spitFrame(now) {
+    const t = (now - spitStart) / 1000, S = SPIT;
+    if (t < 0) { spitShape(S.restLen, S.restR); spitDrop.setAttribute("visibility", "hidden"); return; }
+    if (t < S.grow) {
+      const k = t / S.grow, e = k * k * (3 - 2 * k);
+      spitShape(S.restLen + (S.fullLen - S.restLen) * e, S.restR + (S.fullR - S.restR) * e);
+      return;
+    }
+    if (t < S.grow + S.hang) {
+      const k = (t - S.grow) / S.hang;
+      spitShape(S.fullLen + Math.sin(k * Math.PI) * 7, S.fullR);
+      return;
+    }
+    // капля оторвалась: нитка пружинит обратно, капля падает
+    const k = t - S.grow - S.hang, fall = .5 * S.gravity * k * k;
+    const dropY = S.y + S.fullLen + fall;
+    spitShape(S.restLen + (S.fullLen - S.restLen) * Math.exp(-k * 7) * Math.cos(k * 14), S.restR + (S.fullR - S.restR) * Math.exp(-k * 9));
+    if (dropY < S.bottom) {
+      spitDrop.setAttribute("visibility", "visible");
+      spitDrop.setAttribute("opacity", Math.min(1, (S.bottom - dropY) / 40).toFixed(2));
+      spitDrop.setAttribute("transform", `translate(${S.x} ${dropY.toFixed(1)})`);
+    } else {
+      spitDrop.setAttribute("visibility", "hidden");
+      spitStart = now + 2500 + Math.random() * 3500;
+    }
+  }
 
   function aim(cx, cy) {
     const r = box.getBoundingClientRect();
@@ -710,6 +749,7 @@ $("#toastOpen").addEventListener("click", () => { $("#toast").classList.remove("
     x += (tx - x) * .14;
     y += (ty - y) * .14;
     irises.forEach(i => i.setAttribute("transform", `translate(${x.toFixed(2)} ${y.toFixed(2)})`));
+    spitFrame(now);
     raf = requestAnimationFrame(tick);
   }
   const start = () => { if (!raf && onScreen) raf = requestAnimationFrame(tick); };

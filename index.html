@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>АЛАН ГАФАРОВ — underground streetwear</title>
-<meta name="description" content="Авторская одежда Алана Гафарова. Футболки, джинсы буткат, кофта. Доставка Почтой России.">
+<title>ГАФАРОВ — underground streetwear</title>
+<meta name="description" content="Авторская одежда ГАФАРОВ. Футболки, джинсы буткат, кофта. Доставка Почтой России.">
 <meta name="theme-color" content="#eeedea">
-<meta property="og:title" content="АЛАН ГАФАРОВ — underground streetwear">
+<meta property="og:title" content="ГАФАРОВ — underground streetwear">
 <meta property="og:description" content="Авторская одежда. Доставка Почтой России.">
 <meta property="og:image" content="assets/og.jpg">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -29,9 +29,9 @@
 
 <div class="page">
 <header class="bar">
-  <a class="brand" href="#top" aria-label="Алан Гафаров — наверх">
+  <a class="brand" href="#top" aria-label="Гафаров — наверх">
     <img src="assets/mascot-s.webp" alt="" width="42" height="48">
-    <span>Алан<br>Гафаров</span>
+    <span>Гафаров</span>
   </a>
   <div class="bar-btns">
     <button class="ico" id="openSearch" type="button" aria-label="Поиск">
@@ -65,7 +65,7 @@
     <div class="hero-plate" id="heroPlate">
       <span class="hero-tag hero-tag-l micro">Коллекция 01</span>
       <span class="hero-tag hero-tag-r micro">Underground streetwear</span>
-      <h1 class="masthead" id="heroTitle">Алан Гафаров</h1>
+      <h1 class="masthead" id="heroTitle">Гафаров</h1>
 
       <div class="mascot" id="mascot">
         <img src="assets/mascot-hero.webp" alt="Маскот бренда: младенец со строгим взглядом" width="1010" height="1166" fetchpriority="high">
@@ -86,6 +86,13 @@
             <g class="iris"><circle cx="832" cy="592" r="54" fill="#0a0a0a"/><circle cx="844" cy="572.5" r="9" fill="#fff"/></g>
             <g class="lid"><rect x="760" y="530" width="175" height="96" fill="#fff"/><rect x="760" y="622" width="175" height="5" fill="#0a0a0a"/></g>
           </g>
+          <!-- слюна: форму и падение задаёт app.js, здесь вид без анимации -->
+          <path class="drool" id="drool" d="M548 922C548 939 543 941.3 543 948.3A7 7.7 0 0 0 557 948.3C557 941.3 552 939 552 922Z"/>
+          <path class="drool-hi" id="droolHi" d="M553.5 947Q553.9 952 550.3 954"/>
+          <g id="droolDrop" visibility="hidden">
+            <path class="drool" d="M0-14C1-7 8-4 8 3A8 8.8 0 0 1-8 3C-8-4-1-7 0-14Z"/>
+            <path class="drool-hi" d="M4 2Q4.4 7 .5 8.5"/>
+          </g>
         </svg>
       </div>
 
@@ -95,7 +102,7 @@
         <g filter="url(#rough)">
           <circle cx="100" cy="100" r="92"/><circle cx="100" cy="100" r="66"/>
           <path id="sealPath" d="M100 100m-77 0a77 77 0 1 1 154 0a77 77 0 1 1-154 0" fill="none" stroke="none"/>
-          <text><textPath href="#sealPath" textLength="472">АЛАН ГАФАРОВ ✦ КОЛЛЕКЦИЯ 01 ✦</textPath></text>
+          <text><textPath href="#sealPath" textLength="472">ГАФАРОВ ✦ КОЛЛЕКЦИЯ 01 ✦</textPath></text>
           <text class="seal-n" x="100" y="123" text-anchor="middle">01</text>
         </g>
       </svg>
@@ -155,7 +162,7 @@
 
 <footer class="foot">
   <div class="foot-in">
-    <p class="foot-word" aria-hidden="true">Алан Гафаров</p>
+    <p class="foot-word" aria-hidden="true">Гафаров</p>
     <div class="foot-grid">
       <div>
         <h2>Каталог</h2>
@@ -186,7 +193,7 @@
     <div class="foot-legal">
       <a href="privacy.html">Политика конфиденциальности</a>
       <a href="terms.html">Условия пользования</a>
-      <span>© <span id="year">2026</span> Алан Гафаров</span>
+      <span>© <span id="year">2026</span> Гафаров</span>
     </div>
   </div>
   <div class="foot-peek" aria-hidden="true"><img src="assets/mascot.webp" alt="" width="1010" height="1166" loading="lazy"></div>
@@ -446,9 +453,9 @@ const SIZE_CHARTS = {
 const CATEGORIES = { tee: "Футболки", jeans: "Джинсы буткат", sweater: "Кофта" };
 
 /* надписи на ленте вверху и запросы-подсказки в поиске */
-const RIBBON = ["Алан Гафаров", "Коллекция 01"];
+const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Буткат", "Кофта", "Чёрная", "Белая"];
 </script>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
