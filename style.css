@@ -76,33 +76,26 @@ html.at-foot .margin{opacity:0;visibility:hidden}
 
 /* ---------- первый экран ---------- */
 .hero-plate{position:relative;aspect-ratio:700/860;background:var(--stamp);color:#fff;overflow:hidden;container-type:inline-size}
-.hero-tag{position:absolute;top:3.2%;z-index:2}
+.hero{margin-bottom:clamp(24px,5vw,40px)}
+.hero-tag{position:absolute;top:2.6%;z-index:3}
 .hero-tag-l{left:4%}
 .hero-tag-r{right:4%}
-.mascot{position:absolute;left:13%;top:17.44%;width:74%;aspect-ratio:1010/1166}
+.masthead{position:absolute;left:0;right:0;top:6%;z-index:1;margin:0;text-align:center;font:italic 400 14.8cqw/1 var(--serif);letter-spacing:-.025em;white-space:nowrap}
+.mascot{position:absolute;left:13%;top:14.6%;z-index:2;width:74%;aspect-ratio:1010/1166}
 .mascot img,.mascot svg{position:absolute;inset:0;width:100%;height:100%}
 .lid{transform:translateY(-110px)}
 .eyes.blink .lid{animation:blink .19s ease-in-out}
 @keyframes blink{0%,100%{transform:translateY(-110px)}45%,55%{transform:none}}
-.leaders{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.leaders path{fill:none;stroke:#fff;stroke-width:1}
-.leaders circle{fill:#fff}
-.leaders .on-face path{stroke:var(--stamp)}
-.leaders .on-face circle{fill:var(--stamp)}
-.callout{position:absolute;z-index:2;margin:0;font:400 clamp(12px,2.75cqw,19px)/1.15 var(--serif);font-style:italic}
-.callout i{font-style:italic;opacity:.75}
-.callout-a{left:4%;top:9.2%}
-.callout-b{right:4%;top:9.2%;text-align:right}
-.callout-c{left:4%;bottom:6.2%}
-.seal{position:absolute;right:3.5%;bottom:2.8%;width:25%;height:auto;transform:rotate(-13deg);overflow:visible}
+.brow{transform-box:fill-box;transform-origin:4% 70%;transition:transform .5s var(--ease)}
+.brow.up{transform:translateY(-24px) rotate(-5deg);transition:transform .22s cubic-bezier(.3,1.6,.5,1)}
+.cover{position:absolute;left:4%;bottom:2.8%;z-index:3;display:flex;flex-direction:column;align-items:flex-start;white-space:nowrap}
+.cover a{display:flex;align-items:flex-start;gap:.15em;min-height:24px;font:italic 400 clamp(14px,3.7cqw,26px)/1.2 var(--serif);text-decoration:none}
+.cover a:hover{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
+.cover sup{font:500 .46em/1 var(--ui);margin-top:.25em}
+.seal{position:absolute;right:3.5%;bottom:2.4%;z-index:3;width:23%;height:auto;transform:rotate(-13deg);overflow:visible}
 .seal circle{fill:none;stroke:#fff;stroke-width:2.5}
 .seal text{fill:#fff;font:800 22px/1 var(--poster);letter-spacing:.06em}
 .seal .seal-n{font:italic 400 66px/1 var(--serif);letter-spacing:0}
-.hero-title{padding:clamp(24px,5vw,36px) var(--gut) clamp(40px,8vw,64px)}
-.hero-title h1{margin:0 0 12px;font:italic 400 clamp(40px,14.6vw,104px)/.95 var(--serif);letter-spacing:-.025em;white-space:nowrap}
-.hero-title p{display:flex;justify-content:space-between;gap:16px;margin:0;color:var(--mute)}
-.hero-title a{color:var(--ink);text-decoration:none;white-space:nowrap}
-.hero-title a:hover{color:var(--stamp)}
 
 /* ---------- каталог ---------- */
 .catalog{padding:0 var(--gut)}
@@ -118,7 +111,6 @@ html.at-foot .margin{opacity:0;visibility:hidden}
 .garm{position:absolute;inset:6% 7%;width:86%;height:88%;transition:transform .7s var(--ease)}
 .shot:hover img,.shot:hover .garm{transform:scale(1.03)}
 .shot-cap{position:absolute;left:10px;bottom:10px;font-size:10px;color:var(--mute)}
-.shot-mark{position:absolute;left:10px;top:10px;font-size:10px;color:var(--mute)}
 .rubber{position:absolute;right:9px;bottom:9px;padding:3px 7px 2px;border:2px solid var(--stamp);color:var(--stamp);font:800 clamp(13px,3.2vw,17px)/1 var(--poster);letter-spacing:.06em;text-transform:uppercase;transform:rotate(-7deg);mix-blend-mode:multiply}
 .row-tag{position:absolute;top:10px;right:10px;z-index:1;padding:4px 7px;background:var(--stamp);color:#fff;font-size:10px}
 .row-info{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-top:12px}

@@ -113,17 +113,18 @@ const colorPhotos = (p, color) => Array.isArray(p.photos) ? p.photos : (p.photos
 const ribbonUnit = RIBBON.map(t => `<span>${esc(t)}</span><img src="assets/mascot-s.webp" alt="" width="26" height="30">`).join("");
 $("#ribbon").innerHTML = ribbonUnit.repeat(16);
 $("#year").textContent = new Date().getFullYear();
-$("#catCount").textContent = `${PRODUCTS.length} ${plural(PRODUCTS.length, ["позиция", "позиции", "позиций"])}`;
 
 const countIn = t => PRODUCTS.filter(p => p.type === t).length;
 const catKeys = Object.keys(CATEGORIES).filter(countIn);
 
 $("#footCats").innerHTML = catKeys.map(k =>
   `<li><a href="#catalog" data-cat="${k}">${esc(CATEGORIES[k])}</a></li>`).join("");
+$("#coverCats").innerHTML = catKeys.map(k =>
+  `<a href="#catalog" data-cat="${k}">${esc(CATEGORIES[k])}<sup>${countIn(k)}</sup></a>`).join("");
 
 const roman = n => ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n] || String(n + 1);
-$("#toc").innerHTML = `<li><a href="#top"><i>${roman(0)}</i>Маскот</a></li>` + PRODUCTS.map((p, i) =>
-  `<li><a href="#p-${esc(p.id)}" data-toc="${esc(p.id)}" data-cat="all"><i>${roman(i + 1)}</i>${esc(p.name)}</a></li>`).join("");
+$("#toc").innerHTML = PRODUCTS.map((p, i) =>
+  `<li><a href="#p-${esc(p.id)}" data-toc="${esc(p.id)}" data-cat="all"><i>${roman(i)}</i>${esc(p.name)}</a></li>`).join("");
 
 /* ---------- избранное ---------- */
 let favs = store.get("ga_fav", []).filter(byId);
@@ -147,20 +148,15 @@ function shotHTML(p, s) {
   return `<button class="shot" type="button" data-open="${esc(p.id)}"${s.color ? ` data-open-color="${esc(s.color)}"` : ""} aria-label="${esc(label)}">
     ${s.src ? `<img src="${esc(s.src)}" alt="${esc(p.name)}" loading="lazy">` : s.svg}
     ${s.caption ? `<span class="shot-cap micro">${esc(s.caption)}</span>` : ""}
-    ${s.mark ? `<span class="shot-mark micro">${esc(s.mark)}</span>` : ""}
     ${s.stamp ? `<span class="rubber" style="filter:url(#rough)">Фото скоро</span>` : ""}
   </button>`;
 }
 
 function rowHTML(p) {
-  const n = PRODUCTS.indexOf(p) + 1;
   const out = isSoldOut(p);
   const photoShots = rowShots(p);
   const shots = photoShots.length ? photoShots : placeholders(p);
-  if (!photoShots.length) {
-    shots[0].mark = `Табл. ${roman(n)}`;
-    shots[shots.length - 1].stamp = true;
-  }
+  if (!photoShots.length) shots[shots.length - 1].stamp = true;
   const tag = out ? "Нет в наличии" : p.tag;
   const colors = colorsOf(p);
   return `<article class="row${out ? " out" : ""}" id="p-${esc(p.id)}">
@@ -197,7 +193,7 @@ function renderRows() {
     `<span class="micro">${esc(label)} · ${list.length}</span><button class="linkbtn micro" type="button" data-cat="all">× Показать всё</button>`;
   $("#rows").innerHTML = list.length
     ? list.map(rowHTML).join("")
-    : `<div class="none"><img src="assets/mascot-s.webp" alt="" width="84" height="97"><p>В избранном пока пусто. Он ждёт.</p><button class="btn ghost" type="button" data-cat="all">Весь каталог</button></div>`;
+    : `<div class="none"><img src="assets/mascot-s.webp" alt="" width="84" height="97"><p>В избранном пока пусто</p><button class="btn ghost" type="button" data-cat="all">Весь каталог</button></div>`;
   watchRows();
 }
 
@@ -271,7 +267,7 @@ function runSearch(raw) {
           <span><b class="micro">${esc(p.name)}</b><span class="res-price">${priceText(p)}</span></span>
         </button>`;
       }).join("")
-    : `<p class="res-none">Ничего не нашлось. Он тоже разочарован.</p>`;
+    : `<p class="res-none">Ничего не нашлось</p>`;
 }
 
 function openSearch() {
@@ -507,7 +503,7 @@ function renderCart() {
 
   $("#items").innerHTML = cart.length
     ? cart.map(lineHTML).join("")
-    : `<div class="none"><img src="assets/mascot-s.webp" alt="" width="84" height="97"><p>В корзине пока пусто. Он не удивлён.</p><button class="btn ghost" type="button" data-go-catalog>Смотреть каталог</button></div>`;
+    : `<div class="none"><img src="assets/mascot-s.webp" alt="" width="84" height="97"><p>В корзине пока пусто</p><button class="btn ghost" type="button" data-go-catalog>Смотреть каталог</button></div>`;
   $("#cartFoot").hidden = !cart.length;
 
   $$("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== step);
@@ -684,7 +680,7 @@ function toast(msg) {
 }
 $("#toastOpen").addEventListener("click", () => { $("#toast").classList.remove("show"); openCart(); });
 
-/* ---------- маскот следит за курсором и моргает ---------- */
+/* ---------- маскот следит за курсором, моргает и поднимает бровь ---------- */
 (function gaze() {
   const box = $("#mascot"), eyes = $("#eyes");
   if (!box || !eyes || reducedMotion) return;
@@ -728,6 +724,19 @@ $("#toastOpen").addEventListener("click", () => { $("#toast").classList.remove("
       setTimeout(() => { eyes.classList.remove("blink"); blink(); }, 190);
     }, 2600 + Math.random() * 4600);
   })();
+
+  const brow = $("#brow");
+  let browTimer = 0;
+  function raiseBrow() {
+    if (browTimer) return;
+    brow.classList.add("up");
+    browTimer = setTimeout(() => { brow.classList.remove("up"); browTimer = 0; }, 1100);
+  }
+  (function browLoop(delay) {
+    setTimeout(() => { if (onScreen) raiseBrow(); browLoop(4500 + Math.random() * 5000); }, delay);
+  })(1500);
+  $("#heroPlate").addEventListener("pointerenter", raiseBrow);
+  $("#heroPlate").addEventListener("pointerdown", raiseBrow);
 })();
 
 /* поля по бокам не наезжают на подвал */

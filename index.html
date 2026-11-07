@@ -11,7 +11,7 @@
 <meta property="og:image" content="assets/og.jpg">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -62,18 +62,20 @@
 
 <main id="top" class="col">
   <section class="hero" aria-labelledby="heroTitle">
-    <div class="hero-plate">
-      <span class="hero-tag hero-tag-l micro">Табл. I</span>
-      <span class="hero-tag hero-tag-r micro">Коллекция 01</span>
+    <div class="hero-plate" id="heroPlate">
+      <span class="hero-tag hero-tag-l micro">Коллекция 01</span>
+      <span class="hero-tag hero-tag-r micro">Underground streetwear</span>
+      <h1 class="masthead" id="heroTitle">Алан Гафаров</h1>
 
       <div class="mascot" id="mascot">
-        <img src="assets/mascot.webp" alt="Маскот бренда: младенец со строгим взглядом" width="1010" height="1166" fetchpriority="high">
+        <img src="assets/mascot-hero.webp" alt="Маскот бренда: младенец со строгим взглядом" width="1010" height="1166" fetchpriority="high">
         <svg class="eyes" id="eyes" viewBox="153 4 1010 1166" aria-hidden="true">
           <defs>
             <!-- контуры глаз сняты с рисунка: зрачок двигается только внутри них -->
             <clipPath id="eyeL"><path d="M399 608 407 599 413 593 419 588 425 584 431 580 437 577 443 573 449 571 455 568 461 566 467 564 473 562 479 561 485 560 497 560 503 561 509 562 515 563 521 565 527 567 533 570 539 573 545 578 551 585 557 592 560 597V610L557 613 551 616 545 620 539 622 533 625 527 627 521 628 515 629 509 631 503 632 491 633 473 634 461 633 455 632 449 630 443 628 437 626 431 625 425 622 419 619 413 616 407 611 401 609Z"/></clipPath>
             <clipPath id="eyeR"><path d="M766 590 769 586 775 578 781 573 787 568 793 564 799 561 805 558 811 556 817 555 823 555 829 554 835 553 847 553 853 554 859 556 865 556 871 559 877 560 883 562 889 565 895 568 901 572 907 576 913 580 919 585 925 592 928 593 925 594 919 596 913 603 907 606 901 610 895 616 889 616 883 618 877 620 871 621 865 622 859 624 853 624 847 625 835 625 829 624 823 623 817 622 811 621 805 620 799 618 793 617 787 615 781 611 775 609 769 607 766 606Z"/></clipPath>
           </defs>
+          <image class="brow" id="brow" href="assets/mascot-brow.webp" x="746" y="451" width="236" height="54"/>
           <g clip-path="url(#eyeL)">
             <rect x="390" y="550" width="180" height="90" fill="#fff"/>
             <g class="iris"><circle cx="496" cy="601" r="54" fill="#0a0a0a"/><circle cx="509" cy="580.5" r="9" fill="#fff"/></g>
@@ -87,19 +89,7 @@
         </svg>
       </div>
 
-      <svg class="leaders" viewBox="0 0 700 860" aria-hidden="true">
-        <path d="M157 138 185 221"/>
-        <path d="M560 138 529 236"/>
-        <path d="M124 746 162 663"/>
-        <g class="on-face">
-          <path d="M185 221 243 392"/><circle cx="243" cy="394" r="3.5"/>
-          <path d="M529 236 468 428"/><circle cx="467" cy="430" r="3.5"/>
-          <path d="M162 663 186 610"/><circle cx="187" cy="608" r="3.5"/>
-        </g>
-      </svg>
-      <p class="callout callout-a"><i>а.</i> Бровь:<br>уже недоволен</p>
-      <p class="callout callout-b"><i>б.</i> Взгляд: видел,<br>в чём ты вышел</p>
-      <p class="callout callout-c"><i>в.</i> Щёки:<br>не обсуждаются</p>
+      <nav class="cover" id="coverCats" aria-label="Разделы каталога"></nav>
 
       <svg class="seal" viewBox="0 0 200 200" aria-hidden="true">
         <g filter="url(#rough)">
@@ -109,11 +99,6 @@
           <text class="seal-n" x="100" y="123" text-anchor="middle">01</text>
         </g>
       </svg>
-    </div>
-
-    <div class="hero-title">
-      <h1 id="heroTitle">Алан Гафаров</h1>
-      <p class="micro">Underground streetwear <a href="#catalog"><span id="catCount"></span> ↓</a></p>
     </div>
   </section>
 
@@ -464,6 +449,6 @@ const CATEGORIES = { tee: "Футболки", jeans: "Джинсы буткат"
 const RIBBON = ["Алан Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Буткат", "Кофта", "Чёрная", "Белая"];
 </script>
-<script src="app.js"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>
