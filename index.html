@@ -372,13 +372,9 @@
 <script>
 /* =================== НАСТРОЙКИ =================== */
 const CONFIG = {
-  // почты для заказов: на первую приходит заказ, на остальные — копия.
-  // Заказ отправляет сервис FormSubmit. Первый заказ придёт на первую почту
-  // письмом «Activate Form»: нажмите кнопку в письме один раз.
-  orderEmails: ["ademmotionru@gmail.com", "alangafarov2001@gmail.com"],
-  // после активации FormSubmit может прислать случайную строку вместо адреса —
-  // впишите её сюда, чтобы первая почта не была видна в коде сайта
-  orderInbox: "",
+  // адрес веб-приложения Google Apps Script (…/exec). Скрипт пишет заказ
+  // в Google Таблицу и отправляет письмо на почты — они указаны в самом скрипте
+  orderEndpoint: "https://script.google.com/macros/s/AKfycbwNuM3b9tL99h73fy8hb0etZRNH6AhBj3lG-P958JzlX-swRg_BG2fD04OcXcnOUxZn/exec",
   // ник менеджера в Telegram без @ — только для возврата и брака
   managerTelegram: "sleduyzachelovekom",
   // ссылка на оплату ЮKassa. Пусто — ссылку на оплату пришлёт менеджер
@@ -482,6 +478,6 @@ const CATEGORIES = { tee: "Футболки", jeans: "Джинсы", hoodie: "Х
 const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

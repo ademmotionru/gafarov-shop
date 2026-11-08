@@ -645,32 +645,27 @@ form.addEventListener("submit", async e => {
   $("#closeCart").focus();
 });
 
-/* заказ уходит письмом на почты из CONFIG.orderEmails через FormSubmit */
+/* заказ уходит в Google Apps Script: строка в таблице + письмо на почты */
 async function sendOrder(fields, honey) {
   if (honey) return; // скрытое поле заполнил бот — молча «принимаем»
-  const [to, ...cc] = CONFIG.orderEmails;
-  // сервис иногда подвисает: не держим покупателя дольше 25 секунд
+  if (!CONFIG.orderEndpoint) throw new Error("не задан CONFIG.orderEndpoint");
+  // не держим покупателя дольше 25 секунд
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 25000);
   let res;
   try {
-    res = await fetch(`https://formsubmit.co/ajax/${CONFIG.orderInbox || to}`, {
+    // text/plain — «простой» запрос: Google принимает его без предварительной CORS-проверки
+    res = await fetch(CONFIG.orderEndpoint, {
       method: "POST",
       signal: ctrl.signal,
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({
-        _subject: `Заказ ${fields["Номер заказа"]} — ${fields["Итого"]}`,
-        _template: "table",
-        _captcha: "false",
-        ...(cc.length ? { _cc: cc.join(",") } : {}),
-        ...fields
-      })
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ order: fields })
     });
   } finally {
     clearTimeout(timer);
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok || String(data.success) !== "true") throw new Error(data.message || `HTTP ${res.status}`);
+  if (!res.ok || data.ok !== true) throw new Error(data.error || `HTTP ${res.status}`);
 }
 
 function renderDone() {
