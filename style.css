@@ -118,7 +118,7 @@ html.at-foot .margin{opacity:0;visibility:hidden}
 .row-tag{position:absolute;top:10px;right:10px;z-index:1;padding:4px 7px;background:var(--stamp);color:#fff;font-size:10px}
 .row-info{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-top:12px}
 .row-name{margin:0 0 3px;font-size:11px;font-weight:500}
-.row-name button{letter-spacing:inherit;text-transform:inherit;font:inherit}
+.row-name button{letter-spacing:inherit;text-transform:inherit;font:inherit;text-align:left}
 .row-name button:hover{color:var(--stamp)}
 .row-price{margin:0;font:500 15px/1.3 var(--ui);letter-spacing:.14em;text-transform:uppercase}
 .row-colors{margin:7px 0 0;color:var(--mute);font-size:10px;display:flex;flex-wrap:wrap;align-items:center;gap:0 5px}
@@ -160,6 +160,12 @@ td:first-child{font-weight:600}
 .chart-empty a,.qa a{color:var(--ink);text-underline-offset:3px}
 .note{color:var(--mute);font-size:14px;margin:12px 0 0}
 .qa{padding-bottom:24px}
+.ret{padding-bottom:28px;max-width:60ch}
+.ret h3{margin:14px 0 4px;font-size:17px;font-weight:600}
+.ret h3:first-child{margin-top:0}
+.ret p{margin:0;color:var(--mute)}
+.ret .btn{margin:16px 0 4px}
+.ret .note a{color:var(--ink);text-underline-offset:3px}
 .qa details{border-top:1px solid var(--line)}
 .qa summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 0;font-size:17px;font-weight:500}
 .qa summary::after{content:"+";font:300 22px/1 var(--ui);transition:transform .25s var(--ease)}
@@ -237,7 +243,10 @@ dialog.pd[open]{animation:fade .2s ease}
 .pd-info{padding:24px 16px 40px;display:flex;flex-direction:column}
 @media(min-width:760px){.pd-info{padding:44px 32px 36px}}
 .pd-tag{margin:0 0 8px;color:var(--stamp)}
-.pd-name{margin:0 0 8px;padding-right:32px;font:italic 400 clamp(36px,5.4vw,50px)/1 var(--serif);letter-spacing:-.02em}
+.pd-name{margin:0 0 10px;padding-right:32px;font:italic 400 clamp(30px,4.4vw,42px)/1.02 var(--serif);letter-spacing:-.02em}
+.pd-color{display:inline-flex;align-items:center;gap:7px;font-size:15px}
+/* фото вещей сняты на белом */
+.shot:has(img),.pd-main:has(img),.thumb,.li-pic:has(img),.res-pic:has(img){background:#fff}
 .pd-price{margin:0 0 6px;font:500 15px/1.3 var(--ui);letter-spacing:.14em;text-transform:uppercase}
 .pd-label{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 9px}
 .pd-label span{color:var(--mute)}
@@ -302,6 +311,10 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 .tg span{padding-left:13px;color:var(--mute)}
 .f .tg input{border:0;padding-left:2px}
 .err{display:none;color:var(--err);font-size:13px}
+.hint{font-size:13px;line-height:1.35;color:var(--mute)}
+.f.bad .hint{display:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.send-err{margin:0 0 12px;padding:10px 12px;background:#fbeaea;color:var(--err);font-size:14px;line-height:1.4}
 .f.bad .err{display:block}
 .f.bad input:not([type=checkbox]),.f.bad .tg{border-color:var(--err)}
 .check{grid-template-columns:20px 1fr;column-gap:10px;align-items:start;font-size:14px;line-height:1.4;color:var(--mute);cursor:pointer;margin-top:18px}
@@ -311,7 +324,8 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 .form-terms{margin:10px 0 0 30px;font-size:14px;line-height:1.4;color:var(--mute)}
 
 /* ---------- готово ---------- */
-.done-num{margin:0 0 24px;font:italic 400 clamp(34px,9vw,44px)/1 var(--serif)}
+.done-lead{margin:0 0 18px;line-height:1.5}
+.done-num{margin:0 0 18px;font:italic 400 clamp(34px,9vw,44px)/1 var(--serif)}
 .done-steps{display:grid;gap:10px}
 .done-steps li{border:1px solid var(--line);padding:18px}
 .done-steps b{display:block;font-weight:600;margin-bottom:3px}
@@ -322,10 +336,7 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 .done details summary{cursor:pointer;font-size:14px;color:var(--mute);margin-top:14px}
 
 /* ---------- чат и уведомление ---------- */
-.chat{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:15;width:52px;height:52px;border-radius:50%;background:var(--stamp);display:grid;place-items:center;box-shadow:0 2px 14px rgba(20,20,18,.2);transition:transform .25s var(--ease)}
-.chat:hover{transform:scale(1.08) rotate(-6deg)}
-.chat img{width:34px;height:39px}
-.toast{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:18px;width:max-content;max-width:calc(100% - 32px);padding:13px 16px;background:var(--ink);color:var(--paper);font-size:15px;line-height:1.3;opacity:0;transform:translate(-50%,16px);pointer-events:none;transition:opacity .25s,transform .25s var(--ease)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:18px;width:max-content;max-width:calc(100% - 32px);padding:13px 16px;background:var(--ink);color:var(--paper);font-size:15px;line-height:1.3;opacity:0;transform:translate(-50%,16px);pointer-events:none;transition:opacity .25s,transform .25s var(--ease)}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast button{flex:none;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 

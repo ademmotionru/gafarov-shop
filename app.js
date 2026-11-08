@@ -18,7 +18,9 @@ const store = {
 };
 const root = document.documentElement;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const tgLink = `https://t.me/${encodeURIComponent(CONFIG.managerTelegram)}`;
+const dotHTML = c => `<i class="dot" style="background:${(typeof COLORS === "object" && COLORS[c]) || "#fff"}"></i>`;
+/* ник из «@name», «name» или ссылки t.me/name */
+const tgName = v => String(v || "").trim().replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
 
 /* ---------- рисунки-заглушки ---------- */
 const DRAW = {
@@ -168,7 +170,7 @@ function rowHTML(p) {
       <div class="row-text">
         <h2 class="row-name micro"><button type="button" data-open="${esc(p.id)}">${esc(p.name)}</button></h2>
         <p class="row-price">${priceText(p)}</p>
-        ${colors.length ? `<p class="row-colors micro">${colors.map(c => `<i class="dot${isDark(c) ? " dark" : ""}"></i>${esc(c)}`).join(" ")}</p>` : ""}
+        ${colors.length ? `<p class="row-colors micro">${colors.map(c => `${dotHTML(c)}${esc(c)}`).join(" ")}</p>` : ""}
       </div>
       <div class="row-acts">
         <button class="ico fav" type="button" data-fav="${esc(p.id)}" aria-pressed="${isFav(p.id)}" aria-label="В избранное: ${esc(p.name)}">${FAV_ICON}</button>
@@ -312,7 +314,7 @@ function renderChart(type) {
         <tbody>${c.rows.map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody>
        </table></div>
        <p class="note">Допустимое отклонение замеров — 1–2 см.</p>`
-    : `<p class="chart-empty">Замеры для этой модели скоро добавим. Пока <a href="${tgLink}" target="_blank" rel="noopener">напишите менеджеру</a>, подберём размер по вашим параметрам.</p>`;
+    : `<p class="chart-empty">Замеры этой модели скоро появятся здесь.</p>`;
 }
 $("#chartTabs").addEventListener("click", e => {
   const t = e.target.closest("[data-chart-tab]");
@@ -348,9 +350,10 @@ function openProduct(id, color) {
       ${p.tag && !out ? `<p class="micro pd-tag">${esc(p.tag)}</p>` : ""}
       <h2 class="pd-name" id="pdTitle">${esc(p.name)}</h2>
       <p class="pd-price">${priceText(p)}</p>
-      ${colors.length ? `<div class="pd-label"><span class="micro">Цвет</span></div>
+      ${colors.length > 1 ? `<div class="pd-label"><span class="micro">Цвет</span></div>
       <div class="sizes" role="group" aria-label="Цвет">${colors.map(c =>
-        `<button class="size color" type="button" data-color="${esc(c)}" aria-pressed="${c === curColor}"><i class="dot${isDark(c) ? " dark" : ""}"></i>${esc(c)}</button>`).join("")}</div>` : ""}
+        `<button class="size color" type="button" data-color="${esc(c)}" aria-pressed="${c === curColor}">${dotHTML(c)}${esc(c)}</button>`).join("")}</div>`
+        : colors.length ? `<div class="pd-label"><span class="micro">Цвет</span><span class="pd-color">${dotHTML(colors[0])}${esc(colors[0])}</span></div>` : ""}
       <div class="pd-label"><span class="micro">Размер</span>${SIZE_CHARTS[p.type] ? `<a href="#sizes" class="micro" data-close data-chart="${esc(p.type)}">Таблица размеров</a>` : ""}</div>
       <div class="sizes" role="group" aria-label="Размер">${p.sizes.map(s => {
         const off = (p.soldOut || []).includes(s);
@@ -362,7 +365,7 @@ function openProduct(id, color) {
       ${p.specs && p.specs.length ? `<p class="pd-h micro">Характеристики</p><dl class="specs">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
       <ul class="pd-facts">
         <li>Доставка Почтой России</li>
-        <li>Вопросы по размеру — <a href="${tgLink}" target="_blank" rel="noopener">менеджеру в Telegram</a></li>
+        <li>Возврат в течение 7 дней — <a href="#returns" data-close data-info="returns">условия</a></li>
       </ul>
     </div>
   </div>`;
@@ -570,11 +573,13 @@ form.addEventListener("input", e => {
   const { agree, ...rest } = Object.fromEntries(new FormData(form));
   store.set("ga_form", rest);
 });
+// вставили ссылку t.me/… или @ник — оставляем только ник
+form.elements.tg.addEventListener("change", e => { e.target.value = tgName(e.target.value); });
 
 const RULES = {
   name:  v => v.trim().split(/\s+/).length >= 2,
   phone: v => v.replace(/\D/g, "").length >= 7,
-  tg:    v => /^[A-Za-z0-9_]{4,32}$/.test(v.trim().replace(/^@/, "")),
+  tg:    v => /^[A-Za-z0-9_]{5,32}$/.test(tgName(v)),
   zip:   v => /^\d{6}$/.test(v.trim()),
   city:  v => v.trim().length >= 2,
   address: v => v.trim().length >= 5,
@@ -597,25 +602,40 @@ form.addEventListener("submit", async e => {
   const no = "GA-" + Date.now().toString(36).slice(-5).toUpperCase();
   const unknown = unknownPrice();
   const sum = total();
-  const text = [
-    `Заказ ${no}`,
-    "",
-    ...cart.map(l => {
+  const tg = tgName(d.tg);
+  const fields = {
+    "Номер заказа": no,
+    "Состав": cart.map((l, i) => {
       const p = byId(l.id);
-      return `• ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(p.price * l.qty)}` : " (цена по запросу)"}`;
-    }),
-    "",
-    unknown ? "Итого: уточнить у менеджера" : `Итого: ${rub(sum)} (без доставки)`,
-    "",
-    `ФИО: ${d.name.trim()}`,
-    `Телефон: ${d.code} ${d.phone.trim()}`,
-    `Telegram: @${d.tg.trim().replace(/^@/, "")}`,
-    `Доставка: Почта России`,
-    `Адрес: ${d.zip.trim()}, ${d.city.trim()}, ${d.address.trim()}`,
-    d.comment.trim() ? `Комментарий: ${d.comment.trim()}` : null
-  ].filter(x => x !== null).join("\n");
+      return `${i + 1}) ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — размер ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(p.price * l.qty)}` : " (цена по запросу)"}`;
+    }).join("\n"),
+    "Итого": unknown ? "уточнить" : `${rub(sum)} без доставки`,
+    "ФИО": d.name.trim(),
+    "Telegram": `@${tg}`,
+    "Написать покупателю": `https://t.me/${tg}`,
+    "Телефон": `${d.code} ${d.phone.trim()}`,
+    "Доставка": "Почта России",
+    "Адрес": `${d.zip.trim()}, ${d.city.trim()}, ${d.address.trim()}`,
+    "Комментарий": d.comment.trim() || "—"
+  };
+  const text = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n");
 
-  lastOrder = { no, text, sum: unknown ? null : sum, copied: await copy(text) };
+  const btn = $("#submitOrder");
+  btn.disabled = true;
+  btn.textContent = "Отправляем…";
+  $("#sendErr").hidden = true;
+  try {
+    await sendOrder(fields, d._honey);
+  } catch (err) {
+    console.warn("Заказ не отправлен:", err.message);
+    $("#sendErr").hidden = false;
+    return;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Подтвердить заказ";
+  }
+
+  lastOrder = { no, text, tg, sum: unknown ? null : sum };
   cart = [];
   store.set("ga_cart", cart);
   form.elements.agree.checked = false;
@@ -625,49 +645,45 @@ form.addEventListener("submit", async e => {
   $("#closeCart").focus();
 });
 
+/* заказ уходит письмом на почты из CONFIG.orderEmails через FormSubmit */
+async function sendOrder(fields, honey) {
+  if (honey) return; // скрытое поле заполнил бот — молча «принимаем»
+  const [to, ...cc] = CONFIG.orderEmails;
+  const res = await fetch(`https://formsubmit.co/ajax/${CONFIG.orderInbox || to}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({
+      _subject: `Заказ ${fields["Номер заказа"]} — ${fields["Итого"]}`,
+      _template: "table",
+      _captcha: "false",
+      ...(cc.length ? { _cc: cc.join(",") } : {}),
+      ...fields
+    })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || String(data.success) !== "true") throw new Error(data.message || `HTTP ${res.status}`);
+}
+
 function renderDone() {
   const o = lastOrder;
-  const tg = `${tgLink}?text=${encodeURIComponent(o.text)}`;
   $("#done").innerHTML = `
     <p class="micro" style="margin:24px 0 10px">Номер заказа</p>
     <p class="done-num">${esc(o.no)}</p>
+    <p class="done-lead">Заказ принят. Писать менеджеру не нужно: он сам напишет вам в Telegram на <b>@${esc(o.tg)}</b>.</p>
     <ol class="done-steps">
       <li>
-        <b>1. Отправьте заказ менеджеру</b>
-        <p>Без этого шага заказ не дойдёт. Менеджер подтвердит наличие, цену и стоимость доставки.</p>
-        <a class="btn full" href="${tg}" target="_blank" rel="noopener">Отправить в Telegram</a>
+        <b>1. Дождитесь сообщения</b>
+        <p>Менеджер подтвердит заказ и пришлёт ссылку на оплату вместе с суммой доставки.</p>
       </li>
       <li>
         <b>2. Оплатите заказ</b>
         ${CONFIG.yookassaLink && o.sum
-          ? `<p>Сумма: ${rub(o.sum)}. В комментарии к платежу укажите номер заказа.</p>
+          ? `<p>Сумма: ${rub(o.sum)} без доставки. В комментарии к платежу укажите номер заказа.</p>
              <a class="btn ghost full" href="${esc(CONFIG.yookassaLink)}" target="_blank" rel="noopener">Оплатить ${rub(o.sum)}</a>`
-          : `<p>Менеджер пришлёт ссылку на оплату в Telegram.</p>`}
+          : `<p>После оплаты отправим посылку Почтой России и пришлём трек-номер.</p>`}
       </li>
     </ol>
-    <p class="done-note">${o.copied
-      ? "Текст заказа скопирован. Если он не подставился в чат — просто вставьте его."
-      : "Если текст не подставился в чат — скопируйте его ниже."}</p>
-    <button class="linkbtn" type="button" id="copyAgain">Скопировать текст заказа</button>
-    <details><summary>Показать текст заказа</summary><pre>${esc(o.text)}</pre></details>`;
-  $("#copyAgain").addEventListener("click", async e => {
-    e.currentTarget.textContent = (await copy(o.text)) ? "Скопировано" : "Не удалось — выделите текст ниже";
-  });
-}
-
-async function copy(text) {
-  try { await navigator.clipboard.writeText(text); return true; }
-  catch {
-    try {
-      const t = document.createElement("textarea");
-      t.value = text; t.setAttribute("readonly", "");
-      t.style.cssText = "position:fixed;opacity:0;top:0;left:0";
-      document.body.appendChild(t); t.select();
-      const ok = document.execCommand("copy");
-      t.remove();
-      return ok;
-    } catch { return false; }
-  }
+    <details><summary>Показать заказ</summary><pre>${esc(o.text)}</pre></details>`;
 }
 
 /* ---------- уведомление ---------- */
