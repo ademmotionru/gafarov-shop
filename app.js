@@ -649,17 +649,26 @@ form.addEventListener("submit", async e => {
 async function sendOrder(fields, honey) {
   if (honey) return; // скрытое поле заполнил бот — молча «принимаем»
   const [to, ...cc] = CONFIG.orderEmails;
-  const res = await fetch(`https://formsubmit.co/ajax/${CONFIG.orderInbox || to}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({
-      _subject: `Заказ ${fields["Номер заказа"]} — ${fields["Итого"]}`,
-      _template: "table",
-      _captcha: "false",
-      ...(cc.length ? { _cc: cc.join(",") } : {}),
-      ...fields
-    })
-  });
+  // сервис иногда подвисает: не держим покупателя дольше 25 секунд
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  let res;
+  try {
+    res = await fetch(`https://formsubmit.co/ajax/${CONFIG.orderInbox || to}`, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        _subject: `Заказ ${fields["Номер заказа"]} — ${fields["Итого"]}`,
+        _template: "table",
+        _captcha: "false",
+        ...(cc.length ? { _cc: cc.join(",") } : {}),
+        ...fields
+      })
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok || String(data.success) !== "true") throw new Error(data.message || `HTTP ${res.status}`);
 }
