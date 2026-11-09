@@ -101,6 +101,7 @@ function placeholders(p) {
 
 /* фото модели: первыми идут главные кадры каждого цвета */
 function rowShots(p) {
+  if (Array.isArray(p.preview) && p.preview.length) return p.preview.map(src => ({ src }));
   if (Array.isArray(p.photos)) return p.photos.map(src => ({ src }));
   const groups = Object.entries(p.photos || {});
   return [
@@ -147,7 +148,7 @@ const BAG_ICON = `<svg viewBox="0 0 24 24"><path d="M5 8h14l1 13H4z"/><path d="M
 
 function shotHTML(p, s) {
   const label = `Открыть: ${p.name}${s.color ? `, ${s.color.toLowerCase()}` : ""}`;
-  return `<button class="shot" type="button" data-open="${esc(p.id)}"${s.color ? ` data-open-color="${esc(s.color)}"` : ""} aria-label="${esc(label)}">
+  return `<button class="shot" type="button" data-open="${esc(p.id)}"${s.color ? ` data-open-color="${esc(s.color)}"` : ""}${s.src ? ` data-open-photo="${esc(s.src)}"` : ""} aria-label="${esc(label)}">
     ${s.src ? `<img src="${esc(s.src)}" alt="${esc(p.name)}" loading="lazy">` : s.svg}
     ${s.caption ? `<span class="shot-cap micro">${esc(s.caption)}</span>` : ""}
     ${s.stamp ? `<span class="rubber" style="filter:url(#rough)">Фото скоро</span>` : ""}
@@ -326,11 +327,13 @@ renderChart();
 const pd = $("#pd");
 let cur = null, curSize = null, curColor = null;
 
-function pdMediaHTML(p, color) {
+function pdMediaHTML(p, color, start) {
   const ph = colorPhotos(p, color);
   if (ph.length) {
-    return `<div class="pd-main"><img id="pdImg" src="${esc(ph[0])}" alt="${esc(p.name)}"></div>
-      ${ph.length > 1 ? `<div class="thumbs">${ph.map((src, i) => `<button class="thumb" type="button" data-photo="${esc(src)}" aria-label="Фото ${i + 1}" aria-current="${i === 0}"><img src="${esc(src)}" alt=""></button>`).join("")}</div>` : ""}`;
+    // открываем на том фото, по которому кликнули в ряду
+    const first = ph.includes(start) ? start : ph[0];
+    return `<div class="pd-main"><img id="pdImg" src="${esc(first)}" alt="${esc(p.name)}"></div>
+      ${ph.length > 1 ? `<div class="thumbs">${ph.map((src, i) => `<button class="thumb" type="button" data-photo="${esc(src)}" aria-label="Фото ${i + 1}" aria-current="${src === first}"><img src="${esc(src)}" alt=""></button>`).join("")}</div>` : ""}`;
   }
   const views = colorsOf(p).length
     ? [{ svg: garment(p.icon, "front", isDark(color)), caption: color }]
@@ -338,14 +341,14 @@ function pdMediaHTML(p, color) {
   return views.map(v => `<div class="pd-main pd-ph">${v.svg}<span class="shot-cap micro">${esc(v.caption)}</span></div>`).join("");
 }
 
-function openProduct(id, color) {
+function openProduct(id, color, photo) {
   cur = byId(id);
   const p = cur, out = isSoldOut(p), colors = colorsOf(p);
   const avail = p.sizes.filter(s => !(p.soldOut || []).includes(s));
   curSize = avail.length === 1 && p.sizes.length === 1 ? avail[0] : null;
   curColor = colors.includes(color) ? color : colors[0] || null;
   $("#pdBody").innerHTML = `<div class="pd-grid">
-    <div class="pd-media" id="pdMedia">${pdMediaHTML(p, curColor)}</div>
+    <div class="pd-media" id="pdMedia">${pdMediaHTML(p, curColor, photo)}</div>
     <div class="pd-info">
       ${p.tag && !out ? `<p class="micro pd-tag">${esc(p.tag)}</p>` : ""}
       <h2 class="pd-name" id="pdTitle">${esc(p.name)}</h2>
@@ -444,7 +447,7 @@ document.addEventListener("click", e => {
   const open = e.target.closest("[data-open]");
   if (open && !pd.contains(open) && byId(open.dataset.open)) {
     closeSheets();
-    openProduct(open.dataset.open, open.dataset.openColor);
+    openProduct(open.dataset.open, open.dataset.openColor, open.dataset.openPhoto);
   }
 });
 

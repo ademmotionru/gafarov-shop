@@ -391,10 +391,11 @@ const CONFIG = {
    soldOut: размеры, которых нет в наличии (будут зачёркнуты)
    tag:     плашка на фото: "Новинка", "Мало" или ""
    colors:  цвет модели. Один — просто подпись, несколько — выбор. Оттенок кружка задаёт COLORS ниже
-   photos:  фото. В ряду каталога видны первые два, остальные листаются.
+   photos:  все фото в карточке товара по порядку.
             Просто список:  ["jeans-front.jpg", "jeans-back.jpg"]
             По цветам:      { "Чёрный": ["t-black.jpg"], "Белый": ["t-white.jpg"] }
             Пусто — показывается рисунок-заглушка
+   preview: два фото для ряда на главной. Пусто — первые два из photos
    desc:    описание
    specs:   характеристики — пары ["Название", "значение"]
    ============================================== */
@@ -409,7 +410,8 @@ const PRODUCTS = [
     soldOut: [],
     tag: "",
     colors: ["Чёрный"],
-    photos: ["assets/items/tee-black-1.webp", "assets/items/tee-black-2.webp"],
+    photos: ["assets/items/tee-black-1.webp", "assets/items/tee-black-2.webp", "assets/items/tee-black-model.webp", "assets/items/tees-duo-model.webp"],
+    preview: ["assets/items/tee-black-1.webp", "assets/items/tee-black-model.webp"],
     desc: "",
     specs: []
   },
@@ -423,7 +425,8 @@ const PRODUCTS = [
     soldOut: [],
     tag: "",
     colors: ["Белый"],
-    photos: ["assets/items/tee-white-1.webp", "assets/items/tee-white-2.webp"],
+    photos: ["assets/items/tee-white-1.webp", "assets/items/tee-white-2.webp", "assets/items/tee-white-model.webp", "assets/items/tees-duo-model.webp"],
+    preview: ["assets/items/tee-white-1.webp", "assets/items/tee-white-model.webp"],
     desc: "",
     specs: []
   },
@@ -437,7 +440,8 @@ const PRODUCTS = [
     soldOut: [],
     tag: "",
     colors: ["Синий"],
-    photos: ["assets/items/jeans-blue-1.webp?v=2", "assets/items/jeans-blue-2.webp?v=2"],
+    photos: ["assets/items/jeans-blue-1.webp?v=2", "assets/items/jeans-blue-2.webp?v=2", "assets/items/jeans-blue-model-1.webp", "assets/items/jeans-blue-model-2.webp", "assets/items/jeans-blue-model-3.webp"],
+    preview: ["assets/items/jeans-blue-1.webp?v=2", "assets/items/jeans-blue-model-1.webp"],
     desc: "",
     specs: []
   },
@@ -451,7 +455,8 @@ const PRODUCTS = [
     soldOut: [],
     tag: "",
     colors: ["Серый"],
-    photos: ["assets/items/hoodie-grey-1.webp", "assets/items/hoodie-grey-2.webp"],
+    photos: ["assets/items/hoodie-grey-1.webp", "assets/items/hoodie-grey-2.webp", "assets/items/hoodie-grey-model.webp"],
+    preview: ["assets/items/hoodie-grey-1.webp", "assets/items/hoodie-grey-model.webp"],
     desc: "",
     specs: []
   }
@@ -478,6 +483,6 @@ const CATEGORIES = { tee: "Футболки", jeans: "Джинсы", hoodie: "Х
 const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
