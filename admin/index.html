@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Статистика — ГАФАРОВ</title>
+<meta name="theme-color" content="#eeedea">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="stylesheet" href="../style.css?v=4">
+<link rel="stylesheet" href="admin.css?v=1">
+</head>
+<body class="adm">
+
+<main class="a-login" id="loginView" hidden>
+  <form class="a-login-card" id="loginForm" novalidate>
+    <img src="../assets/mascot-s.webp" alt="" width="56" height="65">
+    <h1>Гафаров <span>статистика</span></h1>
+    <div class="f">
+      <label for="login">Логин</label>
+      <input id="login" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="f">
+      <label for="password">Пароль</label>
+      <input id="password" name="password" type="password" autocomplete="current-password">
+    </div>
+    <p class="a-err" id="loginErr" role="alert" hidden></p>
+    <button class="btn full" id="loginBtn" type="submit">Войти</button>
+  </form>
+</main>
+
+<div class="a-dash" id="dash" hidden>
+  <header class="a-bar">
+    <a class="brand" href="../" aria-label="На сайт">
+      <img src="../assets/mascot-s.webp" alt="" width="42" height="48">
+      <span>Гафаров</span>
+    </a>
+    <div class="a-bar-right">
+      <span class="a-updated micro" id="updated"></span>
+      <button class="a-link micro" id="refreshBtn" type="button">Обновить</button>
+      <button class="a-link micro" id="logoutBtn" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <div class="a-wrap" id="content">
+    <div class="a-head">
+      <h1 class="a-title">Статистика</h1>
+      <p class="a-live" id="live"></p>
+    </div>
+    <div class="a-filters" role="tablist" aria-label="Период" id="periods"></div>
+
+    <section class="a-hero" id="hero" aria-label="Посетители"></section>
+    <section class="a-tiles" id="tiles" aria-label="Главные цифры"></section>
+
+    <section class="a-card">
+      <div class="a-card-head"><h2>Посещаемость</h2><div class="a-legend" id="tlLegend"></div></div>
+      <div class="a-chart" id="timeline"></div>
+      <details class="a-table-toggle"><summary class="micro">Показать таблицей</summary><div id="timelineTable"></div></details>
+    </section>
+
+    <div class="a-grid a-grid-2">
+      <section class="a-card"><div class="a-card-head"><h2>Коротко</h2></div><ul class="a-facts" id="facts"></ul></section>
+      <section class="a-card"><div class="a-card-head"><h2>Воронка</h2><span class="a-note">уникальные посетители</span></div><div id="funnel"></div></section>
+    </div>
+
+    <section class="a-card">
+      <div class="a-card-head"><h2>Товары</h2></div>
+      <div class="a-scroll"><table class="a-table" id="products"></table></div>
+    </section>
+
+    <div class="a-grid a-grid-2">
+      <section class="a-card"><div class="a-card-head"><h2>Откуда приходят</h2><span class="a-note">посетители</span></div><div id="sources"></div></section>
+      <section class="a-card"><div class="a-card-head"><h2>Страницы</h2><span class="a-note">просмотры</span></div><div id="pages"></div></section>
+    </div>
+
+    <div class="a-grid a-grid-2">
+      <section class="a-card">
+        <div class="a-card-head"><h2>Когда заходят</h2><span class="a-note">просмотры, время московское</span></div>
+        <p class="a-sub micro">По часам</p><div class="a-chart a-chart-sm" id="hours"></div>
+        <p class="a-sub micro">По дням недели</p><div class="a-chart a-chart-sm" id="weekdays"></div>
+      </section>
+      <section class="a-card"><div class="a-card-head"><h2>Устройства</h2><span class="a-note">посетители</span></div><div id="devices"></div>
+        <p class="a-sub micro">Браузеры</p><div id="browsers"></div>
+        <p class="a-sub micro">Системы</p><div id="systems"></div>
+      </section>
+    </div>
+
+    <div class="a-grid a-grid-3">
+      <section class="a-card"><div class="a-card-head"><h2>Поиск по сайту</h2></div><div id="searches"></div></section>
+      <section class="a-card"><div class="a-card-head"><h2>Разделы</h2><span class="a-note">открытия</span></div><div id="sections"></div></section>
+      <section class="a-card"><div class="a-card-head"><h2>Часовые пояса</h2><span class="a-note">примерная география</span></div><div id="zones"></div></section>
+    </div>
+
+    <section class="a-card">
+      <div class="a-card-head"><h2>Последние действия</h2><span class="a-note">за всё время</span></div>
+      <div class="a-scroll"><table class="a-table a-feed" id="feed"></table></div>
+    </section>
+
+    <footer class="a-foot">
+      <label class="a-check"><input type="checkbox" id="notrack"> Не считать мои визиты с этого браузера</label>
+      <p class="micro" id="footInfo"></p>
+    </footer>
+  </div>
+</div>
+
+<div class="a-tip" id="tip" role="tooltip" hidden></div>
+<script src="admin.js?v=1"></script>
+</body>
+</html>

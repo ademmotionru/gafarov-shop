@@ -20,6 +20,8 @@ const root = document.documentElement;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dotHTML = c => `<i class="dot" style="background:${(typeof COLORS === "object" && COLORS[c]) || "#fff"}"></i>`;
 /* ник из «@name», «name» или ссылки t.me/name */
+/* статистика: track.js задаёт gaTrack; если его нет — ничего не делаем */
+const track = (...a) => { try { if (typeof window.gaTrack === "function") window.gaTrack(...a); } catch {} };
 const tgName = v => String(v || "").trim().replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
 
 /* ---------- рисунки-заглушки ---------- */
@@ -133,6 +135,7 @@ $("#toc").innerHTML = PRODUCTS.map((p, i) =>
 let favs = store.get("ga_fav", []).filter(byId);
 const isFav = id => favs.includes(id);
 function toggleFav(id) {
+  if (!isFav(id)) track("fav", byId(id)?.name);
   favs = isFav(id) ? favs.filter(x => x !== id) : [...favs, id];
   store.set("ga_fav", favs);
   $$(`[data-fav="${CSS.escape(id)}"]`).forEach(b => b.setAttribute("aria-pressed", isFav(id)));
@@ -202,6 +205,7 @@ function renderRows() {
 
 function setFilter(cat) {
   filter = cat === "fav" || CATEGORIES[cat] ? cat : "all";
+  if (filter !== "all") track("filter", filter === "fav" ? "Избранное" : CATEGORIES[filter]);
   renderRows();
 }
 
@@ -256,7 +260,12 @@ const stem = w => w.slice(0, Math.max(3, w.length - 2));
 const norm = s => s.toLowerCase().replace(/ё/g, "е");
 const haystack = p => norm([p.name, CATEGORIES[p.type] || "", ...colorsOf(p), p.desc || ""].join(" "));
 
+let searchTimer;
 function runSearch(raw) {
+  // в статистику — запрос, на котором человек остановился
+  clearTimeout(searchTimer);
+  const typed = String(raw).trim();
+  if (typed.length >= 2) searchTimer = setTimeout(() => track("search", typed.slice(0, 60)), 1500);
   const words = norm(raw).trim().split(/\s+/).filter(Boolean);
   $("#popular").hidden = words.length > 0;
   if (!words.length) { $("#results").innerHTML = ""; return; }
@@ -343,6 +352,7 @@ function pdMediaHTML(p, color, start) {
 
 function openProduct(id, color, photo) {
   cur = byId(id);
+  track("product", cur.name);
   const p = cur, out = isSoldOut(p), colors = colorsOf(p);
   const avail = p.sizes.filter(s => !(p.soldOut || []).includes(s));
   curSize = avail.length === 1 && p.sizes.length === 1 ? avail[0] : null;
@@ -468,6 +478,7 @@ const total = () => cart.reduce((s, l) => s + (hasPrice(byId(l.id)) ? byId(l.id)
 function save() { store.set("ga_cart", cart); renderCart(); }
 
 function addToCart(id, size, color) {
+  track("cart", byId(id).name, byId(id).price || 0);
   const l = cart.find(x => x.id === id && x.size === size && (x.color || null) === (color || null));
   if (l) l.qty = Math.min(MAX_QTY, l.qty + 1); else cart.push({ id, size, qty: 1, ...(color ? { color } : {}) });
   save();
@@ -549,7 +560,7 @@ function closeCart() {
 $("#openCart").addEventListener("click", openCart);
 $("#closeCart").addEventListener("click", closeCart);
 $("#shade").addEventListener("click", closeCart);
-$("#toForm").addEventListener("click", () => { step = "form"; renderCart(); $("#fName").focus(); });
+$("#toForm").addEventListener("click", () => { track("checkout", "", total()); step = "form"; renderCart(); $("#fName").focus(); });
 $("#back").addEventListener("click", () => { step = "cart"; renderCart(); $("#toForm").focus(); });
 
 document.addEventListener("keydown", e => {
@@ -638,6 +649,7 @@ form.addEventListener("submit", async e => {
     btn.textContent = "Подтвердить заказ";
   }
 
+  track("order", no, unknown ? 0 : sum);
   lastOrder = { no, text, tg, sum: unknown ? null : sum };
   cart = [];
   store.set("ga_cart", cart);
