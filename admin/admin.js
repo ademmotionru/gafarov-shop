@@ -223,15 +223,16 @@
       ["Среднее время на сайте", dur(p.avgDuration), delta(p.avgDuration, pr.avgDuration)],
       ["Отказы", pct(p.bounceRate), delta(p.bounceRate, pr.bounceRate, true)],
       ["Страниц за визит", nf.format(p.pagesPerSession), delta(p.pagesPerSession, pr.pagesPerSession)],
-      ["Заказы", num(p.orders), delta(p.orders, pr.orders)],
-      ["Выручка", rub(p.revenue), delta(p.revenue, pr.revenue)],
-      ["Средний чек", p.orders ? rub(p.avgOrder) : "—", p.orders ? delta(p.avgOrder, pr.avgOrder) : null],
+      ["Заказы", num(p.orders), delta(p.orders, pr.orders), p.paid == null ? null : `оплачено — ${num(p.paid)}`],
+      ["Выручка", rub(p.revenue), delta(p.revenue, pr.revenue), p.waiting ? `ждут оплаты — ${rub(p.waitingSum)}` : null],
+      ["Средний чек", (p.paid == null ? p.orders : p.paid) ? rub(p.avgOrder) : "—", (p.paid == null ? p.orders : p.paid) ? delta(p.avgOrder, pr.avgOrder) : null],
       ["Конверсия в заказ", pct(p.conversion), delta(p.conversion, pr.conversion)],
       ["Глубина прокрутки", pct(p.avgScroll), null]
     ];
-    $("#tiles").replaceChildren(...tiles.map(([label, value, d]) => {
+    $("#tiles").replaceChildren(...tiles.map(([label, value, d, note]) => {
       const t = el("div", "a-tile");
       t.append(el("p", "a-tile-label", label), el("p", "a-tile-value", value));
+      if (note) t.append(el("p", "a-tile-note", note));
       if (d) t.append(el("p", "a-delta " + d.cls, d.text));
       return t;
     }));
