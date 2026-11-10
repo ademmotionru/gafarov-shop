@@ -377,7 +377,7 @@ function openProduct(id, color, photo) {
       ${p.desc ? `<p class="pd-h micro">Описание</p><p class="pd-desc">${esc(p.desc)}</p>` : ""}
       ${p.specs && p.specs.length ? `<p class="pd-h micro">Характеристики</p><dl class="specs">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
       <ul class="pd-facts">
-        <li>Доставка Почтой России</li>
+        <li>Доставка Почтой России — 300 RUB</li>
         <li>Возврат в течение 7 дней — <a href="#returns" data-close data-info="returns">условия</a></li>
       </ul>
     </div>
@@ -463,6 +463,7 @@ document.addEventListener("click", e => {
 
 /* ---------- корзина ---------- */
 const MAX_QTY = 10;
+const DELIVERY = CONFIG.delivery || 0;
 const lineOk = l => {
   const p = byId(l.id);
   return p && p.sizes.includes(l.size) && l.qty > 0 && (colorsOf(p).length ? colorsOf(p).includes(l.color) : !l.color);
@@ -470,6 +471,7 @@ const lineOk = l => {
 let cart = store.get("ga_cart", []).filter(lineOk);
 let step = "cart";
 let lastOrder = null;
+let doneTitle = "Заказ оформлен";
 
 const count = () => cart.reduce((s, l) => s + l.qty, 0);
 const unknownPrice = () => cart.some(l => !hasPrice(byId(l.id)));
@@ -515,8 +517,9 @@ function renderCart() {
   $("#count").textContent = n;
   $("#count").hidden = n === 0;
   $("#openCart").setAttribute("aria-label", n ? `Корзина, товаров: ${n}` : "Корзина");
-  $("#sum").textContent = $("#sum2").textContent = unknown ? "уточнит менеджер" : rub(total());
-  $$("[data-hint]").forEach(h => h.textContent = unknown ? "Цену и доставку подтвердит менеджер" : "Без учёта доставки");
+  $("#sum").textContent = $("#sum2").textContent = unknown ? "уточнит менеджер" : rub(total() + DELIVERY);
+  $$("[data-hint]").forEach(h => h.textContent = unknown ? "Цену и доставку подтвердит менеджер"
+    : DELIVERY ? `Товары ${rub(total())} + доставка по России ${rub(DELIVERY)}` : "Без учёта доставки");
 
   $("#items").innerHTML = cart.length
     ? cart.map(lineHTML).join("")
@@ -524,7 +527,7 @@ function renderCart() {
   $("#cartFoot").hidden = !cart.length;
 
   $$("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== step);
-  $("#drawerTitle").textContent = { cart: "Корзина", form: "Оформление", done: "Заказ оформлен" }[step];
+  $("#drawerTitle").textContent = { cart: "Корзина", form: "Оформление", done: doneTitle }[step];
   $("#back").hidden = step !== "form";
 }
 
@@ -615,7 +618,7 @@ form.addEventListener("submit", async e => {
 
   const no = "GA-" + Date.now().toString(36).slice(-5).toUpperCase();
   const unknown = unknownPrice();
-  const sum = total();
+  const sum = total() + DELIVERY;
   const tg = tgName(d.tg);
   const fields = {
     "Номер заказа": no,
@@ -623,30 +626,32 @@ form.addEventListener("submit", async e => {
       const p = byId(l.id);
       return `${i + 1}) ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — размер ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(p.price * l.qty)}` : " (цена по запросу)"}`;
     }).join("\n"),
-    "Итого": unknown ? "уточнить" : `${rub(sum)} без доставки`,
+    "Итого": unknown ? "уточнить" : `${rub(sum)} с доставкой`,
     "ФИО": d.name.trim(),
     "Telegram": `@${tg}`,
     "Написать покупателю": `https://t.me/${tg}`,
     "Телефон": `${d.code} ${d.phone.trim()}`,
-    "Доставка": "Почта России",
+    "Доставка": DELIVERY ? `Почта России, ${rub(DELIVERY)}` : "Почта России",
     "Адрес": `${d.zip.trim()}, ${d.city.trim()}, ${d.address.trim()}`,
     "Комментарий": d.comment.trim() || "—"
   };
   const text = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n");
 
+  const items = cart.map(l => ({ id: l.id, size: l.size, qty: l.qty, color: l.color || "" }));
+
   const btn = $("#submitOrder");
   btn.disabled = true;
   btn.textContent = "Отправляем…";
   $("#sendErr").hidden = true;
+  let res;
   try {
-    await sendOrder(fields, d._honey);
+    res = await sendOrder(fields, d._honey, items);
   } catch (err) {
     console.warn("Заказ не отправлен:", err.message);
     $("#sendErr").hidden = false;
-    return;
-  } finally {
     btn.disabled = false;
     btn.textContent = "Подтвердить заказ";
+    return;
   }
 
   track("order", no, unknown ? 0 : sum);
@@ -654,15 +659,30 @@ form.addEventListener("submit", async e => {
   cart = [];
   store.set("ga_cart", cart);
   form.elements.agree.checked = false;
+
+  // оплата подключена — сразу на страницу ЮKassa; вернётся на ?pay=номер
+  if (res && res.pay) {
+    store.set("ga_pending", lastOrder);
+    btn.textContent = "Переходим к оплате…";
+    location.assign(res.pay);
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = "Подтвердить заказ";
   step = "done";
+  doneTitle = "Заказ оформлен";
   renderDone();
   renderCart();
   $("#closeCart").focus();
 });
 
-/* заказ уходит в Google Apps Script: строка в таблице + письмо на почты */
-async function sendOrder(fields, honey) {
-  if (honey) return; // скрытое поле заполнил бот — молча «принимаем»
+/* заказ уходит в Google Apps Script: строка в таблице, письмо на почты и платёж в ЮKassa */
+async function sendOrder(fields, honey, items) {
+  if (honey) return {}; // скрытое поле заполнил бот — молча «принимаем»
+  return api({ order: fields, items });
+}
+
+async function api(body) {
   if (!CONFIG.orderEndpoint) throw new Error("не задан CONFIG.orderEndpoint");
   // не держим покупателя дольше 25 секунд
   const ctrl = new AbortController();
@@ -674,13 +694,14 @@ async function sendOrder(fields, honey) {
       method: "POST",
       signal: ctrl.signal,
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ order: fields })
+      body: JSON.stringify(body)
     });
   } finally {
     clearTimeout(timer);
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok !== true) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
 }
 
 function renderDone() {
@@ -692,18 +713,85 @@ function renderDone() {
     <ol class="done-steps">
       <li>
         <b>1. Дождитесь сообщения</b>
-        <p>Менеджер подтвердит заказ и пришлёт ссылку на оплату вместе с суммой доставки.</p>
+        <p>Менеджер подтвердит заказ и пришлёт ссылку на оплату${o.sum ? ` на ${rub(o.sum)}` : ""}.</p>
       </li>
       <li>
         <b>2. Оплатите заказ</b>
-        ${CONFIG.yookassaLink && o.sum
-          ? `<p>Сумма: ${rub(o.sum)} без доставки. В комментарии к платежу укажите номер заказа.</p>
-             <a class="btn ghost full" href="${esc(CONFIG.yookassaLink)}" target="_blank" rel="noopener">Оплатить ${rub(o.sum)}</a>`
-          : `<p>После оплаты отправим посылку Почтой России и пришлём трек-номер.</p>`}
+        <p>После оплаты отправим посылку Почтой России и пришлём трек-номер.</p>
       </li>
     </ol>
     <details><summary>Показать заказ</summary><pre>${esc(o.text)}</pre></details>`;
 }
+
+/* ---------- возврат с оплаты ЮKassa: gafarov.shop/?pay=GA-XXXXX ---------- */
+function renderPay(state, no, payUrl) {
+  const o = lastOrder || { no, tg: "", text: "" };
+  doneTitle = state === "paid" ? "Заказ оплачен" : "Оплата заказа";
+  const tg = o.tg ? ` в Telegram на <b>@${esc(o.tg)}</b>` : " в Telegram";
+  const body = {
+    check: `<p class="done-lead">Проверяем оплату…</p>`,
+    paid: `<p class="done-lead">Оплата прошла, спасибо! Отправим посылку Почтой России и пришлём трек-номер${tg}.</p>`,
+    pending: `<p class="done-lead">Оплата ещё не завершена. Если вы уже оплатили, статус обновится сам в течение 10 минут — писать менеджеру не нужно.</p>
+      ${payUrl ? `<a class="btn full" href="${esc(payUrl)}">Перейти к оплате</a>` : ""}
+      <button class="btn ghost full" type="button" data-pay-check style="margin-top:10px">Проверить ещё раз</button>`,
+    failed: `<p class="done-lead">Оплата не прошла, деньги не списаны. Заказ сохранён — его можно оплатить ещё раз.</p>
+      <button class="btn full" type="button" data-pay-again>Оплатить снова</button>`,
+    cancelled: `<p class="done-lead">Этот заказ отменён. Если это ошибка, напишите менеджеру.</p>`,
+    error: `<p class="done-lead">Не получилось проверить оплату. Проверьте интернет и попробуйте ещё раз.</p>
+      <button class="btn ghost full" type="button" data-pay-check>Проверить ещё раз</button>`
+  }[state];
+  $("#done").innerHTML = `
+    <p class="micro" style="margin:24px 0 10px">Номер заказа</p>
+    <p class="done-num">${esc(o.no || no)}</p>
+    ${body}
+    ${o.text ? `<details><summary>Показать заказ</summary><pre>${esc(o.text)}</pre></details>` : ""}`;
+  $("#drawerTitle").textContent = doneTitle;
+}
+
+async function checkPay(no, attempt = 0) {
+  let st = null;
+  try { st = await api({ action: "payStatus", order: no }); } catch {}
+  if (!st) return renderPay("error", no);
+  if (st.status === "succeeded") {
+    store.set("ga_pending", null);
+    return renderPay("paid", no);
+  }
+  // ЮKassa подтверждает платёж не мгновенно — несколько раз переспрашиваем
+  if (st.status === "pending" && attempt < 4) return setTimeout(() => checkPay(no, attempt + 1), 3000);
+  if (st.status === "pending") return renderPay("pending", no, st.pay);
+  if (st.status === "cancelled_order") return renderPay("cancelled", no);
+  if (st.status === "none") { doneTitle = "Заказ оформлен"; $("#drawerTitle").textContent = doneTitle; return renderDone(); }
+  renderPay("failed", no);
+}
+
+$("#done").addEventListener("click", async e => {
+  const b = e.target.closest("[data-pay-check], [data-pay-again]");
+  const no = b && lastOrder && lastOrder.no;
+  if (!no) return;
+  if (b.hasAttribute("data-pay-check")) { renderPay("check", no); return checkPay(no, 4); }
+  b.disabled = true;
+  b.textContent = "Готовим оплату…";
+  try {
+    const r = await api({ action: "pay", order: no });
+    if (r.pay) return location.assign(r.pay);
+    if (r.status === "succeeded") return renderPay("paid", no);
+    if (r.status === "cancelled_order") return renderPay("cancelled", no);
+  } catch {}
+  renderPay("error", no);
+});
+
+(function payReturn() {
+  const no = new URLSearchParams(location.search).get("pay");
+  if (!no || !/^GA-[A-Z0-9]{3,12}$/.test(no)) return;
+  history.replaceState(null, "", location.pathname + location.hash);
+  const saved = store.get("ga_pending", null);
+  lastOrder = saved && saved.no === no ? saved : { no, tg: "", text: "", sum: null };
+  step = "done";
+  renderCart();
+  renderPay("check", no);
+  openCart();
+  checkPay(no);
+})();
 
 /* ---------- уведомление ---------- */
 let toastTimer;
