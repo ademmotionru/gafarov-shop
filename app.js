@@ -5,7 +5,13 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", 
 const rub = n => n.toLocaleString("ru-RU") + " RUB";
 const byId = id => PRODUCTS.find(p => p.id === id);
 const hasPrice = p => typeof p.price === "number" && p.price > 0;
-const priceText = p => hasPrice(p) ? rub(p.price) : "Цена по запросу";
+// скидка действует, пока не наступило CONFIG.saleUntil
+const saleOn = () => !!CONFIG.saleUntil && Date.now() < Date.parse(CONFIG.saleUntil);
+const onSale = p => hasPrice(p) && typeof p.sale === "number" && p.sale > 0 && p.sale < p.price && saleOn();
+const priceOf = p => onSale(p) ? p.sale : p.price;
+const priceText = p => !hasPrice(p) ? "Цена по запросу"
+  : onSale(p) ? `<s class="price-old"><span class="vh">Старая цена </span>${rub(p.price)}</s> <span class="price-new"><span class="vh">цена со скидкой </span>${rub(p.sale)}</span>`
+  : rub(p.price);
 const isSoldOut = p => p.sizes.every(s => (p.soldOut || []).includes(s));
 const colorsOf = p => p.colors || [];
 const plural = (n, [one, few, many]) => {
@@ -115,7 +121,7 @@ const rowPhotos = p => rowShots(p).map(s => s.src);
 const colorPhotos = (p, color) => Array.isArray(p.photos) ? p.photos : (p.photos?.[color] || rowPhotos(p));
 
 /* ---------- статика ---------- */
-const ribbonUnit = RIBBON.map(t => `<span>${esc(t)}</span><img src="assets/mascot-s.webp" alt="" width="26" height="30">`).join("");
+const ribbonUnit = (saleOn() && CONFIG.saleRibbon ? [CONFIG.saleRibbon, ...RIBBON] : RIBBON).map(t => `<span>${esc(t)}</span><img src="assets/mascot-s.webp" alt="" width="26" height="30">`).join("");
 $("#ribbon").innerHTML = ribbonUnit.repeat(16);
 $("#year").textContent = new Date().getFullYear();
 
@@ -475,12 +481,12 @@ let doneTitle = "Заказ оформлен";
 
 const count = () => cart.reduce((s, l) => s + l.qty, 0);
 const unknownPrice = () => cart.some(l => !hasPrice(byId(l.id)));
-const total = () => cart.reduce((s, l) => s + (hasPrice(byId(l.id)) ? byId(l.id).price * l.qty : 0), 0);
+const total = () => cart.reduce((s, l) => s + (hasPrice(byId(l.id)) ? priceOf(byId(l.id)) * l.qty : 0), 0);
 
 function save() { store.set("ga_cart", cart); renderCart(); }
 
 function addToCart(id, size, color) {
-  track("cart", byId(id).name, byId(id).price || 0);
+  track("cart", byId(id).name, priceOf(byId(id)) || 0);
   const l = cart.find(x => x.id === id && x.size === size && (x.color || null) === (color || null));
   if (l) l.qty = Math.min(MAX_QTY, l.qty + 1); else cart.push({ id, size, qty: 1, ...(color ? { color } : {}) });
   save();
@@ -506,7 +512,7 @@ function lineHTML(l, i) {
       </div>
     </div>
     <div class="li-side">
-      <span class="li-sum">${hasPrice(p) ? rub(p.price * l.qty) : ""}</span>
+      <span class="li-sum">${hasPrice(p) ? rub(priceOf(p) * l.qty) : ""}</span>
       <button type="button" class="linkbtn" data-rm="${i}">Удалить</button>
     </div>
   </div>`;
@@ -624,7 +630,7 @@ form.addEventListener("submit", async e => {
     "Номер заказа": no,
     "Состав": cart.map((l, i) => {
       const p = byId(l.id);
-      return `${i + 1}) ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — размер ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(p.price * l.qty)}` : " (цена по запросу)"}`;
+      return `${i + 1}) ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — размер ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(priceOf(p) * l.qty)}${onSale(p) ? " (скидка)" : ""}` : " (цена по запросу)"}`;
     }).join("\n"),
     "Итого": unknown ? "уточнить" : `${rub(sum)} с доставкой`,
     "ФИО": d.name.trim(),

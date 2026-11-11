@@ -363,3 +363,8 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* скидка: старая цена зачёркнута, новая — цветом бренда */
+.price-old{color:var(--mute);text-decoration:line-through;text-decoration-thickness:1px;margin-right:6px;white-space:nowrap}
+.price-new{color:var(--stamp);font-weight:600;white-space:nowrap}
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}

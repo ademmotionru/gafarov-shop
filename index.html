@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://gafarov.shop/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -378,7 +378,11 @@ const CONFIG = {
   // ник менеджера в Telegram без @ — только для возврата и брака
   managerTelegram: "sleduyzachelovekom",
   // доставка Почтой России, рублей. Прибавляется к сумме заказа; такая же цифра — в скрипте (DELIVERY_PRICE)
-  delivery: 300
+  delivery: 300,
+  // скидка: у товара поле sale — цена со скидкой. Действует до saleUntil (время московское),
+  // потом сайт сам показывает обычную цену. Те же цифры и дата — в скрипте (CATALOG, SALE_UNTIL)
+  saleUntil: "2026-11-12T00:00:00+03:00",
+  saleRibbon: "Скидки только сегодня"
   // оплата через ЮKassa подключается в самом скрипте. Цены товаров продублированы там же (CATALOG)
 };
 
@@ -388,6 +392,7 @@ const CONFIG = {
    icon:    рисунок-заглушка, пока нет фото: "tee-regular", "tee-boxy", "jeans", "sweater"
    name:    название
    price:   цена в рублях числом, например 4990. null — на сайте «Цена по запросу»
+   sale:    цена со скидкой (необязательно). Работает до CONFIG.saleUntil, старая цена зачёркнута
    sizes:   размеры, которые есть у модели
    soldOut: размеры, которых нет в наличии (будут зачёркнуты)
    tag:     плашка на фото: "Новинка", "Мало" или ""
@@ -407,6 +412,7 @@ const PRODUCTS = [
     icon: "tee-boxy",
     name: "NO POLITICS crop distress t-shirts black",
     price: 990,
+    sale: 790,
     sizes: ["S", "M", "L", "XL"],
     soldOut: [],
     tag: "",
@@ -422,6 +428,7 @@ const PRODUCTS = [
     icon: "tee-boxy",
     name: "NO POLITICS crop distress t-shirts white",
     price: 990,
+    sale: 790,
     sizes: ["S", "M", "L", "XL"],
     soldOut: [],
     tag: "",
@@ -437,6 +444,7 @@ const PRODUCTS = [
     icon: "jeans",
     name: "NO POLITICS bootcut jeans blue",
     price: 2990,
+    sale: 2690,
     sizes: ["S", "M", "L", "XL"],
     soldOut: [],
     tag: "",
@@ -452,6 +460,7 @@ const PRODUCTS = [
     icon: "sweater",
     name: "NO POLITICS distress hoodie grey",
     price: 2590,
+    sale: 2390,
     sizes: ["S", "M", "L", "XL"],
     soldOut: [],
     tag: "",
@@ -484,7 +493,7 @@ const CATEGORIES = { tee: "Футболки", jeans: "Джинсы", hoodie: "Х
 const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 <script src="track.js?v=1" defer></script>
 </body>
 </html>
