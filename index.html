@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://gafarov.shop/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -288,6 +288,15 @@
   <section class="pane" data-pane="cart">
     <div class="db" id="items"></div>
     <div class="df" id="cartFoot">
+      <div class="promo" id="promo">
+        <button class="linkbtn" type="button" id="promoOpen" aria-expanded="false" aria-controls="promoRow">Есть промокод?</button>
+        <div class="promo-row" id="promoRow" hidden>
+          <input id="promoInput" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="Промокод" aria-label="Промокод">
+          <button class="btn ghost" type="button" id="promoApply">Применить</button>
+        </div>
+        <p class="promo-err" id="promoErr" role="alert" hidden></p>
+        <p class="promo-on" id="promoOn" hidden><span>Промокод <b id="promoCode"></b> <span id="promoOff"></span></span><button class="linkbtn" type="button" id="promoRemove">Убрать</button></p>
+      </div>
       <div class="total"><span>Итого</span><span id="sum"></span></div>
       <p class="total-hint" data-hint></p>
       <button class="btn full" id="toForm" type="button">Оформить заказ</button>
@@ -383,12 +392,14 @@ const CONFIG = {
   // потом сайт сам показывает обычную цену. Те же цифры и дата — в скрипте (CATALOG, SALE_UNTIL)
   saleUntil: "",
   saleRibbon: "Скидки только сегодня"
-  // оплата через ЮKassa подключается в самом скрипте. Цены товаров продублированы там же (CATALOG)
+  // оплата через ЮKassa подключается в самом скрипте. Цены он берёт из products.js на сайте
 };
 
 /* =================== ТОВАРЫ ===================
+   Товары, цвета (COLORS) и разделы (CATEGORIES) лежат в products.js. Его пишет админка:
+   gafarov.shop/admin → «Товары». Поля товара:
    id:      уникальный код (латиницей)
-   type:    "tee", "jeans" или "hoodie" — раздел в меню и таблица размеров
+   type:    раздел из CATEGORIES ("tee", "jeans", "hoodie"…) — раздел в меню и таблица размеров
    icon:    рисунок-заглушка, пока нет фото: "tee-regular", "tee-boxy", "jeans", "sweater"
    name:    название
    price:   цена в рублях числом, например 4990. null — на сайте «Цена по запросу»
@@ -396,80 +407,16 @@ const CONFIG = {
    sizes:   размеры, которые есть у модели
    soldOut: размеры, которых нет в наличии (будут зачёркнуты)
    tag:     плашка на фото: "Новинка", "Мало" или ""
-   colors:  цвет модели. Один — просто подпись, несколько — выбор. Оттенок кружка задаёт COLORS ниже
+   colors:  цвет модели. Один — просто подпись, несколько — выбор. Оттенок кружка задаёт COLORS
    photos:  все фото в карточке товара по порядку.
             Просто список:  ["jeans-front.jpg", "jeans-back.jpg"]
             По цветам:      { "Чёрный": ["t-black.jpg"], "Белый": ["t-white.jpg"] }
             Пусто — показывается рисунок-заглушка
    preview: два фото для ряда на главной. Пусто — первые два из photos
    desc:    описание
+   hidden:  true — товар скрыт с сайта (в админке «Скрыть с сайта»)
    specs:   характеристики — пары ["Название", "значение"]
    ============================================== */
-const PRODUCTS = [
-  {
-    id: "tee-black",
-    type: "tee",
-    icon: "tee-boxy",
-    name: "NO POLITICS crop distress t-shirts black",
-    price: 990,
-    sizes: ["S", "M", "L", "XL"],
-    soldOut: [],
-    tag: "",
-    colors: ["Чёрный"],
-    photos: ["assets/items/tee-black-1.webp", "assets/items/tee-black-2.webp", "assets/items/tee-black-model.webp", "assets/items/tees-duo-model.webp"],
-    preview: ["assets/items/tee-black-1.webp", "assets/items/tee-black-model.webp"],
-    desc: "",
-    specs: []
-  },
-  {
-    id: "tee-white",
-    type: "tee",
-    icon: "tee-boxy",
-    name: "NO POLITICS crop distress t-shirts white",
-    price: 990,
-    sizes: ["S", "M", "L", "XL"],
-    soldOut: [],
-    tag: "",
-    colors: ["Белый"],
-    photos: ["assets/items/tee-white-1.webp", "assets/items/tee-white-2.webp", "assets/items/tee-white-model.webp", "assets/items/tees-duo-model.webp"],
-    preview: ["assets/items/tee-white-1.webp", "assets/items/tee-white-model.webp"],
-    desc: "",
-    specs: []
-  },
-  {
-    id: "jeans-blue",
-    type: "jeans",
-    icon: "jeans",
-    name: "NO POLITICS bootcut jeans blue",
-    price: 2990,
-    sizes: ["S", "M", "L", "XL"],
-    soldOut: [],
-    tag: "",
-    colors: ["Синий"],
-    photos: ["assets/items/jeans-blue-1.webp?v=2", "assets/items/jeans-blue-2.webp?v=2", "assets/items/jeans-blue-model-1.webp", "assets/items/jeans-blue-model-2.webp", "assets/items/jeans-blue-model-3.webp"],
-    preview: ["assets/items/jeans-blue-1.webp?v=2", "assets/items/jeans-blue-model-1.webp"],
-    desc: "",
-    specs: []
-  },
-  {
-    id: "hoodie-grey",
-    type: "hoodie",
-    icon: "sweater",
-    name: "NO POLITICS distress hoodie grey",
-    price: 2590,
-    sizes: ["S", "M", "L", "XL"],
-    soldOut: [],
-    tag: "",
-    colors: ["Серый"],
-    photos: ["assets/items/hoodie-grey-1.webp", "assets/items/hoodie-grey-2.webp", "assets/items/hoodie-grey-model.webp"],
-    preview: ["assets/items/hoodie-grey-1.webp", "assets/items/hoodie-grey-model.webp"],
-    desc: "",
-    specs: []
-  }
-];
-
-/* оттенки кружков рядом с названием цвета */
-const COLORS = { "Чёрный": "#141412", "Белый": "#ffffff", "Синий": "#34507a", "Серый": "#a6a6a2" };
 
 /* =================== ТАБЛИЦЫ РАЗМЕРОВ (см) ===================
    rows — строки таблицы: ["размер", значения по колонкам cols]
@@ -482,14 +429,12 @@ const SIZE_CHARTS = {
   hoodie: { title: "Худи",     cols: ["Ширина по груди", "Длина", "Рукав"], rows: [] }
 };
 
-/* разделы каталога: в меню, подвале и фильтре */
-const CATEGORIES = { tee: "Футболки", jeans: "Джинсы", hoodie: "Худи" };
-
 /* надписи на ленте вверху и запросы-подсказки в поиске */
 const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
-<script src="app.js?v=10"></script>
+<script src="products.js?v=1"></script>
+<script src="app.js?v=11"></script>
 <script src="track.js?v=1" defer></script>
 </body>
 </html>

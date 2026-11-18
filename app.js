@@ -1,8 +1,10 @@
-/* Логика магазина. Товары и настройки — в index.html. */
+/* Логика магазина. Настройки — в index.html, товары — в products.js (его пишет админка). */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 const rub = n => n.toLocaleString("ru-RU") + " RUB";
+// скрытые в админке товары на сайт не выводим
+for (let i = PRODUCTS.length - 1; i >= 0; i--) if (PRODUCTS[i].hidden) PRODUCTS.splice(i, 1);
 const byId = id => PRODUCTS.find(p => p.id === id);
 const hasPrice = p => typeof p.price === "number" && p.price > 0;
 // скидка действует, пока не наступило CONFIG.saleUntil
@@ -483,6 +485,14 @@ const count = () => cart.reduce((s, l) => s + l.qty, 0);
 const unknownPrice = () => cart.some(l => !hasPrice(byId(l.id)));
 const total = () => cart.reduce((s, l) => s + (hasPrice(byId(l.id)) ? priceOf(byId(l.id)) * l.qty : 0), 0);
 
+/* промокод: { code, kind: "rub" | "pct", value }. Скидка только на товары, окончательно её считает скрипт */
+const promoOk = p => p && typeof p.code === "string" && (p.kind === "rub" || p.kind === "pct") && p.value > 0;
+let promo = promoOk(store.get("ga_promo", null)) ? store.get("ga_promo", null) : null;
+const promoOff = goods => !promo || !goods ? 0
+  : Math.max(0, Math.min(goods, promo.kind === "pct" ? Math.round(goods * promo.value / 100) : promo.value));
+const toPay = () => total() - promoOff(total()) + DELIVERY;
+function setPromo(p) { promo = p; store.set("ga_promo", p); renderCart(); }
+
 function save() { store.set("ga_cart", cart); renderCart(); }
 
 function addToCart(id, size, color) {
@@ -523,9 +533,18 @@ function renderCart() {
   $("#count").textContent = n;
   $("#count").hidden = n === 0;
   $("#openCart").setAttribute("aria-label", n ? `Корзина, товаров: ${n}` : "Корзина");
-  $("#sum").textContent = $("#sum2").textContent = unknown ? "уточнит менеджер" : rub(total() + DELIVERY);
+  const off = unknown ? 0 : promoOff(total());
+  $("#sum").textContent = $("#sum2").textContent = unknown ? "уточнит менеджер" : rub(toPay());
   $$("[data-hint]").forEach(h => h.textContent = unknown ? "Цену и доставку подтвердит менеджер"
-    : DELIVERY ? `Товары ${rub(total())} + доставка по России ${rub(DELIVERY)}` : "Без учёта доставки");
+    : `Товары ${rub(total())}` + (off ? ` − промокод ${rub(off)}` : "") +
+      (DELIVERY ? ` + доставка по России ${rub(DELIVERY)}` : ", без учёта доставки"));
+  $("#promoOn").hidden = !promo;
+  $("#promoOpen").hidden = !!promo;
+  if (promo) {
+    $("#promoRow").hidden = true;
+    $("#promoCode").textContent = promo.code;
+    $("#promoOff").textContent = promo.kind === "pct" ? `−${promo.value}%` : `−${rub(Math.min(promo.value, total()))}`;
+  }
 
   $("#items").innerHTML = cart.length
     ? cart.map(lineHTML).join("")
@@ -572,6 +591,46 @@ $("#shade").addEventListener("click", closeCart);
 $("#toForm").addEventListener("click", () => { track("checkout", "", total()); step = "form"; renderCart(); $("#fName").focus(); });
 $("#back").addEventListener("click", () => { step = "cart"; renderCart(); $("#toForm").focus(); });
 
+/* ---------- промокод ---------- */
+function promoErr(msg) {
+  $("#promoErr").textContent = msg || "";
+  $("#promoErr").hidden = !msg;
+}
+$("#promoOpen").addEventListener("click", () => {
+  $("#promoRow").hidden = false;
+  $("#promoOpen").hidden = true;
+  $("#promoOpen").setAttribute("aria-expanded", "true");
+  $("#promoInput").focus();
+});
+async function applyPromo() {
+  const code = $("#promoInput").value.trim(), btn = $("#promoApply");
+  if (!code) return promoErr("Введите промокод");
+  if (!/^[A-Za-z0-9_-]{3,40}$/.test(code)) return promoErr("Такого промокода нет");
+  btn.disabled = true;
+  btn.textContent = "Проверяем…";
+  promoErr("");
+  try {
+    const r = await api({ action: "promo", code });
+    const p = { code: String(r.code), kind: r.kind, value: Number(r.value) };
+    if (!promoOk(p)) throw new Error("bad promo");
+    $("#promoInput").value = "";
+    setPromo(p);
+  } catch (err) {
+    promoErr(err.data && err.data.error === "promo" && err.data.message ? err.data.message : "Не получилось проверить промокод. Попробуйте ещё раз.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Применить";
+  }
+}
+$("#promoApply").addEventListener("click", applyPromo);
+$("#promoInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); applyPromo(); } });
+$("#promoInput").addEventListener("input", () => promoErr(""));
+$("#promoRemove").addEventListener("click", () => {
+  setPromo(null);
+  $("#promoOpen").setAttribute("aria-expanded", "false");
+  $("#promoOpen").focus();
+});
+
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && root.classList.contains("cart-open") && !pd.open) closeCart();
 });
@@ -586,6 +645,7 @@ $("#drawer").addEventListener("keydown", e => {
 
 /* ---------- оформление ---------- */
 const form = $("#orderForm");
+const SEND_ERR = $("#sendErr").textContent;
 const draft = store.get("ga_form", {});
 for (const [k, v] of Object.entries(draft)) {
   const el = form.elements[k];
@@ -624,15 +684,17 @@ form.addEventListener("submit", async e => {
 
   const no = "GA-" + Date.now().toString(36).slice(-5).toUpperCase();
   const unknown = unknownPrice();
-  const sum = total() + DELIVERY;
+  const off = unknown ? 0 : promoOff(total());
+  const sum = toPay();
   const tg = tgName(d.tg);
   const fields = {
     "Номер заказа": no,
     "Состав": cart.map((l, i) => {
       const p = byId(l.id);
       return `${i + 1}) ${p.name}${l.color ? `, ${l.color.toLowerCase()}` : ""} — размер ${l.size} × ${l.qty}${hasPrice(p) ? ` = ${rub(priceOf(p) * l.qty)}${onSale(p) ? " (скидка)" : ""}` : " (цена по запросу)"}`;
-    }).join("\n"),
+    }).concat(promo ? [`Промокод ${promo.code} — −${rub(off)}`] : []).join("\n"),
     "Итого": unknown ? "уточнить" : `${rub(sum)} с доставкой`,
+    ...(promo ? { "Промокод": `${promo.code} (−${rub(off)})` } : {}),
     "ФИО": d.name.trim(),
     "Telegram": `@${tg}`,
     "Написать покупателю": `https://t.me/${tg}`,
@@ -643,7 +705,8 @@ form.addEventListener("submit", async e => {
   };
   const text = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n");
 
-  const items = cart.map(l => ({ id: l.id, size: l.size, qty: l.qty, color: l.color || "" }));
+  // цена — чтобы скрипт заметил, если каталог только что поменяли, и перечитал его
+  const items = cart.map(l => ({ id: l.id, size: l.size, qty: l.qty, color: l.color || "", price: hasPrice(byId(l.id)) ? priceOf(byId(l.id)) : null }));
 
   const btn = $("#submitOrder");
   btn.disabled = true;
@@ -651,9 +714,15 @@ form.addEventListener("submit", async e => {
   $("#sendErr").hidden = true;
   let res;
   try {
-    res = await sendOrder(fields, d._honey, items);
+    res = await sendOrder(fields, d._honey, items, promo && promo.code);
   } catch (err) {
     console.warn("Заказ не отправлен:", err.message);
+    // промокод успел закончиться — убираем его и показываем новую сумму
+    const promoGone = err.data && err.data.error === "promo";
+    if (promoGone) setPromo(null);
+    $("#sendErr").textContent = promoGone
+      ? `${err.data.message || "Промокод больше не действует"}. Мы убрали его, итого — ${rub(toPay())}. Нажмите «Подтвердить заказ» ещё раз.`
+      : SEND_ERR;
     $("#sendErr").hidden = false;
     btn.disabled = false;
     btn.textContent = "Подтвердить заказ";
@@ -664,6 +733,8 @@ form.addEventListener("submit", async e => {
   lastOrder = { no, text, tg, sum: unknown ? null : sum };
   cart = [];
   store.set("ga_cart", cart);
+  promo = null;
+  store.set("ga_promo", null);
   form.elements.agree.checked = false;
 
   // оплата подключена — сразу на страницу ЮKassa; вернётся на ?pay=номер
@@ -683,9 +754,9 @@ form.addEventListener("submit", async e => {
 });
 
 /* заказ уходит в Google Apps Script: строка в таблице, письмо на почты и платёж в ЮKassa */
-async function sendOrder(fields, honey, items) {
+async function sendOrder(fields, honey, items, promoCode) {
   if (honey) return {}; // скрытое поле заполнил бот — молча «принимаем»
-  return api({ order: fields, items });
+  return api({ order: fields, items, ...(promoCode ? { promo: promoCode } : {}) });
 }
 
 async function api(body) {
@@ -706,7 +777,11 @@ async function api(body) {
     clearTimeout(timer);
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok || data.ok !== true) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok || data.ok !== true) {
+    const err = new Error(data.error || `HTTP ${res.status}`);
+    err.data = data;
+    throw err;
+  }
   return data;
 }
 

@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>Статистика — ГАФАРОВ</title>
+<title>Админка — ГАФАРОВ</title>
 <meta name="theme-color" content="#eeedea">
 <link rel="icon" type="image/png" href="../assets/favicon.png">
-<link rel="stylesheet" href="../style.css?v=5">
-<link rel="stylesheet" href="admin.css?v=2">
+<link rel="stylesheet" href="../style.css?v=6">
+<link rel="stylesheet" href="admin.css?v=3">
 </head>
 <body class="adm">
 
 <main class="a-login" id="loginView" hidden>
   <form class="a-login-card" id="loginForm" novalidate>
     <img src="../assets/mascot-s.webp" alt="" width="56" height="65">
-    <h1>Гафаров <span>статистика</span></h1>
+    <h1>Гафаров <span>админка</span></h1>
     <div class="f">
       <label for="login">Логин</label>
       <input id="login" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">
@@ -41,8 +41,13 @@
       <button class="a-link micro" id="logoutBtn" type="button">Выйти</button>
     </div>
   </header>
+  <nav class="a-nav" aria-label="Разделы админки">
+    <button class="a-nav-tab" type="button" data-view="stats">Статистика</button>
+    <button class="a-nav-tab" type="button" data-view="products">Товары</button>
+    <button class="a-nav-tab" type="button" data-view="promos">Промокоды</button>
+  </nav>
 
-  <div class="a-wrap" id="content">
+  <div class="a-wrap" id="statsView">
     <div class="a-head">
       <h1 class="a-title">Статистика</h1>
       <p class="a-live" id="live"></p>
@@ -101,9 +106,38 @@
       <p class="micro" id="footInfo"></p>
     </footer>
   </div>
+
+  <div class="a-wrap" id="productsView" hidden>
+    <div class="a-head">
+      <h1 class="a-title">Товары</h1>
+      <button class="btn" id="addProduct" type="button">Добавить товар</button>
+    </div>
+    <p class="a-lead">Порядок здесь — порядок на сайте: двигайте товары стрелками. Изменения видны покупателям после «Опубликовать», через 1–2 минуты.</p>
+    <p class="a-err" id="pErr" role="alert" hidden></p>
+    <div id="pList"><p class="a-empty">Загружаем товары…</p></div>
+  </div>
+
+  <div class="a-wrap" id="promosView" hidden>
+    <div class="a-head">
+      <h1 class="a-title">Промокоды</h1>
+      <button class="btn" id="addPromo" type="button">Добавить промокод</button>
+    </div>
+    <p class="a-lead" id="promoLead">Скидка — в рублях (500) или в процентах (10%), только на товары, без доставки. Пустой лимит — без ограничений. Активация засчитывается, когда заказ оплачен. Неоплаченный заказ держит её 2 часа. Большие и маленькие буквы в коде не важны.</p>
+    <p class="a-err" id="qErr" role="alert" hidden></p>
+    <div id="qList"><p class="a-empty">Загружаем промокоды…</p></div>
+  </div>
+
+  <div class="a-savebar" id="saveBar" hidden>
+    <p class="a-savebar-msg" id="saveMsg" role="status"></p>
+    <div class="a-savebar-acts">
+      <button class="a-link micro" id="discardBtn" type="button">Отменить</button>
+      <button class="btn" id="saveBtn" type="button">Опубликовать</button>
+    </div>
+  </div>
 </div>
 
 <div class="a-tip" id="tip" role="tooltip" hidden></div>
-<script src="admin.js?v=2"></script>
+<script src="admin.js?v=3"></script>
+<script src="admin-shop.js?v=1"></script>
 </body>
 </html>

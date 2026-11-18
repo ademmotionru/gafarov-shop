@@ -368,3 +368,14 @@ html.cart-open .drawer{transform:none;visibility:visible;transition:transform .3
 .price-old{color:var(--mute);text-decoration:line-through;text-decoration-thickness:1px;margin-right:6px;white-space:nowrap}
 .price-new{color:var(--stamp);font-weight:600;white-space:nowrap}
 .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* промокод в корзине */
+.promo{margin:0 0 12px}
+.promo-row{display:flex;gap:8px;margin-top:8px}
+.promo-row input{flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:0;background:#fff;color:var(--ink);font:400 16px var(--ui);-webkit-appearance:none;appearance:none}
+.promo-row input:focus{outline:none;border-color:var(--ink)}
+.promo-row .btn{height:44px;padding:0 16px;flex:none}
+.promo-err{margin:8px 0 0;color:var(--err);font-size:14px;line-height:1.35}
+.promo-on{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0;font-size:15px}
+.promo-on b{font-weight:600;overflow-wrap:anywhere}
+.promo-on #promoOff{color:var(--stamp);font-weight:600;white-space:nowrap}

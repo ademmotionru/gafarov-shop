@@ -1,4 +1,4 @@
-/* gafarov.shop/admin — статистика посещений.
+/* gafarov.shop/admin — статистика посещений и вкладки «Товары» и «Промокоды» (admin-shop.js).
    Логин и пароль проверяет Google Apps Script магазина; здесь их нет. */
 (() => {
   "use strict";
@@ -26,6 +26,8 @@
 
   let stats = null;
   let period = PERIODS.some(p => p[0] === ss.get("ga_admin_period")) ? ss.get("ga_admin_period") : "7d";
+  const VIEWS = ["stats", "products", "promos"];
+  let view = VIEWS.indexOf(location.hash.slice(1)) > 0 ? location.hash.slice(1) : "stats";
 
   /* ---------- мелочи ---------- */
   function el(tag, cls, text) {
@@ -129,19 +131,44 @@
     }
   }
 
-  $("#refreshBtn").addEventListener("click", refresh);
+  const shop = () => window.gaShop || null;
+  $("#refreshBtn").addEventListener("click", () => {
+    if (view === "stats") refresh(); else if (shop()) shop().reload(view);
+  });
   $("#logoutBtn").addEventListener("click", () => {
+    if (shop() && shop().dirty() && !confirm("Есть неопубликованные изменения. Выйти и потерять их?")) return;
     const token = ss.get(TOKEN_KEY);
     ss.del(TOKEN_KEY);
     stats = null;
     if (token) call({ action: "logout", token }).catch(() => {});
+    if (shop()) shop().reset();
     showLogin();
   });
   $("#notrack").addEventListener("change", e => {
     if (e.target.checked) ls.set("ga_notrack", "1"); else ls.del("ga_notrack");
   });
-  // пока вкладка открыта — обновляем раз в 2 минуты
-  setInterval(() => { if (stats && document.visibilityState === "visible") refresh(); }, 120000);
+  // пока открыта статистика — обновляем раз в 2 минуты
+  setInterval(() => { if (stats && view === "stats" && document.visibilityState === "visible") refresh(); }, 120000);
+
+  /* ---------- вкладки ---------- */
+  function setView(v) {
+    view = VIEWS.indexOf(v) >= 0 ? v : "stats";
+    try { history.replaceState(null, "", view === "stats" ? location.pathname + location.search : "#" + view); } catch {}
+    VIEWS.forEach(k => { $("#" + k + "View").hidden = k !== view; });
+    document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === view)));
+    $("#updated").hidden = view !== "stats";
+    if (view === "stats") render();
+    if (shop()) shop().show(view);
+  }
+  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+
+  // для admin-shop.js
+  window.gaAdmin = {
+    call,
+    token: () => ss.get(TOKEN_KEY),
+    view: () => view,
+    authFail() { ss.del(TOKEN_KEY); showLogin("Сессия закончилась, войдите снова — несохранённые правки останутся"); }
+  };
 
   /* ---------- экран статистики ---------- */
   function showDash(data) {
@@ -150,7 +177,7 @@
     $("#dash").hidden = false;
     $("#notrack").checked = !!ls.get("ga_notrack");
     $("#updated").textContent = "обновлено " + msk(data.generated, { hour: "2-digit", minute: "2-digit" });
-    render();
+    setView(view);
   }
 
   function renderPeriods() {
@@ -166,7 +193,7 @@
   }
 
   function render() {
-    if (!stats) return;
+    if (!stats || view !== "stats") return;
     const p = stats.periods[period];
     renderPeriods();
     const live = $("#live");
@@ -512,6 +539,8 @@
     $("#dash").hidden = false;
     $("#updated").textContent = "загружаем…";
     refresh();
+    // admin-shop.js ещё не загружен — вкладку покажем, когда он будет готов
+    addEventListener("DOMContentLoaded", () => setView(view));
   } else {
     showLogin();
   }
