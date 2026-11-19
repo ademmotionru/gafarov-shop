@@ -539,9 +539,8 @@ function renderCart() {
     : `Товары ${rub(total())}` + (off ? ` − промокод ${rub(off)}` : "") +
       (DELIVERY ? ` + доставка по России ${rub(DELIVERY)}` : ", без учёта доставки"));
   $("#promoOn").hidden = !promo;
-  $("#promoOpen").hidden = !!promo;
+  $("#promoRow").hidden = !!promo;
   if (promo) {
-    $("#promoRow").hidden = true;
     $("#promoCode").textContent = promo.code;
     $("#promoOff").textContent = promo.kind === "pct" ? `−${promo.value}%` : `−${rub(Math.min(promo.value, total()))}`;
   }
@@ -596,16 +595,11 @@ function promoErr(msg) {
   $("#promoErr").textContent = msg || "";
   $("#promoErr").hidden = !msg;
 }
-$("#promoOpen").addEventListener("click", () => {
-  $("#promoRow").hidden = false;
-  $("#promoOpen").hidden = true;
-  $("#promoOpen").setAttribute("aria-expanded", "true");
-  $("#promoInput").focus();
-});
+// true — код принят; false — ошибка уже показана под полем
 async function applyPromo() {
   const code = $("#promoInput").value.trim(), btn = $("#promoApply");
-  if (!code) return promoErr("Введите промокод");
-  if (!/^[A-Za-z0-9_-]{3,40}$/.test(code)) return promoErr("Такого промокода нет");
+  if (!code) { promoErr("Введите промокод"); return false; }
+  if (!/^[A-Za-z0-9_-]{3,40}$/.test(code)) { promoErr("Такого промокода нет"); return false; }
   btn.disabled = true;
   btn.textContent = "Проверяем…";
   promoErr("");
@@ -615,8 +609,10 @@ async function applyPromo() {
     if (!promoOk(p)) throw new Error("bad promo");
     $("#promoInput").value = "";
     setPromo(p);
+    return true;
   } catch (err) {
     promoErr(err.data && err.data.error === "promo" && err.data.message ? err.data.message : "Не получилось проверить промокод. Попробуйте ещё раз.");
+    return false;
   } finally {
     btn.disabled = false;
     btn.textContent = "Применить";
@@ -627,8 +623,7 @@ $("#promoInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.p
 $("#promoInput").addEventListener("input", () => promoErr(""));
 $("#promoRemove").addEventListener("click", () => {
   setPromo(null);
-  $("#promoOpen").setAttribute("aria-expanded", "false");
-  $("#promoOpen").focus();
+  $("#promoInput").focus();
 });
 
 document.addEventListener("keydown", e => {
@@ -682,6 +677,15 @@ form.addEventListener("submit", async e => {
   }
   if (firstBad) { firstBad.focus(); return; }
 
+  const btn = $("#submitOrder");
+  // код вписали, но «Применить» не нажали — проверяем сами; не подошёл — заказ не отправляем
+  if (!promo && $("#promoInput").value.trim()) {
+    btn.disabled = true;
+    const ok = await applyPromo();
+    btn.disabled = false;
+    if (!ok) { $("#promoInput").focus(); return; }
+  }
+
   const no = "GA-" + Date.now().toString(36).slice(-5).toUpperCase();
   const unknown = unknownPrice();
   const off = unknown ? 0 : promoOff(total());
@@ -708,7 +712,6 @@ form.addEventListener("submit", async e => {
   // цена — чтобы скрипт заметил, если каталог только что поменяли, и перечитал его
   const items = cart.map(l => ({ id: l.id, size: l.size, qty: l.qty, color: l.color || "", price: hasPrice(byId(l.id)) ? priceOf(byId(l.id)) : null }));
 
-  const btn = $("#submitOrder");
   btn.disabled = true;
   btn.textContent = "Отправляем…";
   $("#sendErr").hidden = true;

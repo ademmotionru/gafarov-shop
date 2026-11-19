@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://gafarov.shop/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -288,15 +288,6 @@
   <section class="pane" data-pane="cart">
     <div class="db" id="items"></div>
     <div class="df" id="cartFoot">
-      <div class="promo" id="promo">
-        <button class="linkbtn" type="button" id="promoOpen" aria-expanded="false" aria-controls="promoRow">Есть промокод?</button>
-        <div class="promo-row" id="promoRow" hidden>
-          <input id="promoInput" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="Промокод" aria-label="Промокод">
-          <button class="btn ghost" type="button" id="promoApply">Применить</button>
-        </div>
-        <p class="promo-err" id="promoErr" role="alert" hidden></p>
-        <p class="promo-on" id="promoOn" hidden><span>Промокод <b id="promoCode"></b> <span id="promoOff"></span></span><button class="linkbtn" type="button" id="promoRemove">Убрать</button></p>
-      </div>
       <div class="total"><span>Итого</span><span id="sum"></span></div>
       <p class="total-hint" data-hint></p>
       <button class="btn full" id="toForm" type="button">Оформить заказ</button>
@@ -351,6 +342,15 @@
       <div class="f">
         <label for="fComment">Комментарий <span class="opt">— необязательно</span></label>
         <textarea id="fComment" name="comment" rows="2"></textarea>
+      </div>
+      <div class="f promo" id="promo">
+        <label for="promoInput">Промокод <span class="opt">— если есть</span></label>
+        <div class="promo-row" id="promoRow">
+          <input id="promoInput" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Введите код">
+          <button class="btn ghost" type="button" id="promoApply">Применить</button>
+        </div>
+        <p class="promo-err" id="promoErr" role="alert" hidden></p>
+        <p class="promo-on" id="promoOn" hidden><span>Промокод <b id="promoCode"></b> <span id="promoOff"></span></span><button class="linkbtn" type="button" id="promoRemove">Убрать</button></p>
       </div>
       <label class="f check">
         <input type="checkbox" name="agree">
@@ -434,7 +434,7 @@ const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
 <script src="products.js?v=1"></script>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
 <script src="track.js?v=1" defer></script>
 </body>
 </html>
