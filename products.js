@@ -14,7 +14,7 @@ const PRODUCTS = /*json*/[
       "XL"
     ],
     "soldOut": [],
-    "tag": "",
+    "tag": "Мало",
     "colors": [
       "Чёрный"
     ],
