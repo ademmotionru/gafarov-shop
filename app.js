@@ -327,11 +327,10 @@ function renderChart(type) {
   const c = SIZE_CHARTS[chartType];
   if (!c) { $("#chart").innerHTML = ""; return; }
   $("#chart").innerHTML = c.rows.length
-    ? `<div class="table-wrap"><table>
-        <thead><tr><th>Размер</th>${c.cols.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+    ? `${c.fit ? `<p class="chart-fit micro">${esc(c.fit)}</p>` : ""}<div class="table-wrap"><table class="size-table">
+        <thead><tr><th>Параметр, см</th>${c.sizes.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead>
         <tbody>${c.rows.map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody>
-       </table></div>
-       <p class="note">Допустимое отклонение замеров — 1–2 см.</p>`
+       </table></div>`
     : `<p class="chart-empty">Замеры этой модели скоро появятся здесь.</p>`;
 }
 $("#chartTabs").addEventListener("click", e => {
@@ -385,7 +384,7 @@ function openProduct(id, color, photo) {
       ${p.desc ? `<p class="pd-h micro">Описание</p><p class="pd-desc">${esc(p.desc)}</p>` : ""}
       ${p.specs && p.specs.length ? `<p class="pd-h micro">Характеристики</p><dl class="specs">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
       <ul class="pd-facts">
-        <li>Доставка Почтой России — 300 RUB</li>
+        <li>Доставка в пункт выдачи Яндекс Маркета — 300 RUB</li>
         <li>Возврат в течение 7 дней — <a href="#returns" data-close data-info="returns">условия</a></li>
       </ul>
     </div>
@@ -660,7 +659,7 @@ const RULES = {
   tg:    v => /^[A-Za-z0-9_]{5,32}$/.test(tgName(v)),
   zip:   v => /^\d{6}$/.test(v.trim()),
   city:  v => v.trim().length >= 2,
-  address: v => v.trim().length >= 5,
+  pickup: v => v.trim().length >= 5,
   agree: v => v === "on"
 };
 
@@ -703,8 +702,8 @@ form.addEventListener("submit", async e => {
     "Telegram": `@${tg}`,
     "Написать покупателю": `https://t.me/${tg}`,
     "Телефон": `${d.code} ${d.phone.trim()}`,
-    "Доставка": DELIVERY ? `Почта России, ${rub(DELIVERY)}` : "Почта России",
-    "Адрес": `${d.zip.trim()}, ${d.city.trim()}, ${d.address.trim()}`,
+    "Доставка": DELIVERY ? `Яндекс Маркет, пункт выдачи, ${rub(DELIVERY)}` : "Яндекс Маркет, пункт выдачи",
+    "Адрес": `${d.zip.trim()}, ${d.city.trim()}, пункт выдачи Яндекс Маркета: ${d.pickup.trim()}`,
     "Комментарий": d.comment.trim() || "—"
   };
   const text = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n");
@@ -801,7 +800,7 @@ function renderDone() {
       </li>
       <li>
         <b>2. Оплатите заказ</b>
-        <p>После оплаты отправим посылку Почтой России и пришлём трек-номер.</p>
+        <p>После оплаты отправим посылку в ваш пункт выдачи Яндекс Маркета и пришлём трек-номер.</p>
       </li>
     </ol>
     <details><summary>Показать заказ</summary><pre>${esc(o.text)}</pre></details>`;
@@ -814,7 +813,7 @@ function renderPay(state, no, payUrl) {
   const tg = o.tg ? ` в Telegram на <b>@${esc(o.tg)}</b>` : " в Telegram";
   const body = {
     check: `<p class="done-lead">Проверяем оплату…</p>`,
-    paid: `<p class="done-lead">Оплата прошла, спасибо! Отправим посылку Почтой России и пришлём трек-номер${tg}.</p>`,
+    paid: `<p class="done-lead">Оплата прошла, спасибо! Отправим посылку в ваш пункт выдачи Яндекс Маркета и пришлём трек-номер${tg}.</p>`,
     pending: `<p class="done-lead">Оплата ещё не завершена. Если вы уже оплатили, статус обновится сам в течение 10 минут — писать менеджеру не нужно.</p>
       ${payUrl ? `<a class="btn full" href="${esc(payUrl)}">Перейти к оплате</a>` : ""}
       <button class="btn ghost full" type="button" data-pay-check style="margin-top:10px">Проверить ещё раз</button>`,

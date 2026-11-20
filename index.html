@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ГАФАРОВ — underground streetwear</title>
-<meta name="description" content="Авторская одежда ГАФАРОВ. Футболки, джинсы буткат, худи. Заказ на сайте, доставка Почтой России.">
+<meta name="description" content="Авторская одежда ГАФАРОВ. Футболки, джинсы буткат, худи. Заказ на сайте, доставка в пункты выдачи Яндекс Маркета.">
 <meta name="theme-color" content="#eeedea">
 <meta property="og:title" content="ГАФАРОВ — underground streetwear">
-<meta property="og:description" content="Авторская одежда. Доставка Почтой России.">
+<meta property="og:description" content="Авторская одежда. Доставка в пункты выдачи Яндекс Маркета.">
 <meta property="og:image" content="https://gafarov.shop/assets/og.jpg">
 <meta property="og:url" content="https://gafarov.shop/">
 <link rel="canonical" href="https://gafarov.shop/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -58,7 +58,7 @@
   <dl class="margin-facts">
     <div><dt>Заказ</dt><dd>Только на сайте</dd></div>
     <div><dt>Оплата</dt><dd>На сайте</dd></div>
-    <div><dt>Доставка</dt><dd>Почта России, 300 RUB</dd></div>
+    <div><dt>Доставка</dt><dd>Яндекс Маркет, 300 RUB</dd></div>
   </dl>
 </aside>
 
@@ -123,13 +123,13 @@
         <li><b>01</b><div><h3>Выберите вещь</h3><p>Откройте модель, выберите размер и добавьте в корзину.</p></div></li>
         <li><b>02</b><div><h3>Оформите заказ на сайте</h3><p>Укажите ФИО, ник в Telegram, телефон и адрес. Писать менеджеру не нужно: заказ сразу придёт нам.</p></div></li>
         <li><b>03</b><div><h3>Оплатите</h3><p>Сразу после оформления откроется страница оплаты ЮKassa. Сумма уже с доставкой.</p></div></li>
-        <li><b>04</b><div><h3>Получите</h3><p>После оплаты отправим посылку Почтой России и пришлём трек-номер в Telegram.</p></div></li>
+        <li><b>04</b><div><h3>Получите</h3><p>После оплаты отправим посылку в выбранный пункт выдачи Яндекс Маркета и пришлём трек-номер в Telegram.</p></div></li>
       </ol>
     </details>
 
     <details class="acc" id="sizes">
       <summary>Размеры</summary>
-      <p class="acc-lead">Замеры изделия в сантиметрах, допустимое отклонение 1–2 см.</p>
+      <p class="acc-lead">Все замеры предварительные, в сантиметрах. Ширина груди и плеч — замеры изделия в разложенном виде, остальные параметры указаны согласно таблицам.</p>
       <div class="tabs" role="tablist" aria-label="Тип изделия" id="chartTabs"></div>
       <div id="chart"></div>
     </details>
@@ -139,7 +139,7 @@
       <div class="qa">
         <details>
           <summary>Как и когда отправите заказ?</summary>
-          <p>Почтой России после оплаты. Срок доставки зависит от региона. Трек-номер для отслеживания пришлём в Telegram.</p>
+          <p>После оплаты отправим через Яндекс Маркет в пункт выдачи, который вы укажете при заказе. Срок доставки зависит от региона. Трек-номер для отслеживания пришлём в Telegram.</p>
         </details>
         <details>
           <summary>Сколько стоит доставка?</summary>
@@ -335,9 +335,10 @@
         <span class="err">Укажите город</span>
       </div>
       <div class="f">
-        <label for="fAddr">Улица, дом, квартира</label>
-        <input id="fAddr" name="address" autocomplete="street-address" placeholder="ул. Ленина, д. 1, кв. 5">
-        <span class="err">Укажите адрес</span>
+        <label for="fPickup">Адрес пункта выдачи Яндекс Маркета</label>
+        <input id="fPickup" name="pickup" autocomplete="off" placeholder="ул. Ленина, д. 1">
+        <span class="hint">Посылка придёт в этот пункт. Ближайший можно найти в приложении Яндекс Маркет или <a href="https://yandex.ru/maps/?text=%D0%AF%D0%BD%D0%B4%D0%B5%D0%BA%D1%81%20%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%82%20%D0%BF%D1%83%D0%BD%D0%BA%D1%82%20%D0%B2%D1%8B%D0%B4%D0%B0%D1%87%D0%B8" target="_blank" rel="noopener">на Яндекс Картах</a></span>
+        <span class="err">Укажите адрес пункта выдачи</span>
       </div>
       <div class="f">
         <label for="fComment">Комментарий <span class="opt">— необязательно</span></label>
@@ -386,7 +387,7 @@ const CONFIG = {
   orderEndpoint: "https://script.google.com/macros/s/AKfycbwNuM3b9tL99h73fy8hb0etZRNH6AhBj3lG-P958JzlX-swRg_BG2fD04OcXcnOUxZn/exec",
   // ник менеджера в Telegram без @ — только для возврата и брака
   managerTelegram: "sleduyzachelovekom",
-  // доставка Почтой России, рублей. Прибавляется к сумме заказа; такая же цифра — в скрипте (DELIVERY_PRICE)
+  // доставка Яндекс Маркетом в пункт выдачи, рублей. Прибавляется к сумме заказа; такая же цифра — в скрипте (DELIVERY_PRICE)
   delivery: 300,
   // скидка: у товара поле sale — цена со скидкой. Действует до saleUntil (время московское),
   // потом сайт сам показывает обычную цену. Те же цифры и дата — в скрипте (CATALOG, SALE_UNTIL)
@@ -419,14 +420,29 @@ const CONFIG = {
    ============================================== */
 
 /* =================== ТАБЛИЦЫ РАЗМЕРОВ (см) ===================
-   rows — строки таблицы: ["размер", значения по колонкам cols]
-   пример: rows: [["S", "52", "66", "21"], ["M", "55", "68", "22"]]
-   пока rows пустой — на сайте «замеры скоро появятся»
+   sizes — размеры по столбцам; rows — строки: ["параметр", значение для каждого размера]
+   fit — посадка, пишется над таблицей. Пока rows пустой — на сайте «замеры скоро появятся»
    ============================================================= */
 const SIZE_CHARTS = {
-  tee:    { title: "Футболка", cols: ["Ширина по груди", "Длина", "Рукав"], rows: [] },
-  jeans:  { title: "Джинсы",   cols: ["Талия", "Бёдра", "Длина", "Низ"],    rows: [] },
-  hoodie: { title: "Худи",     cols: ["Ширина по груди", "Длина", "Рукав"], rows: [] }
+  tee: { title: "Футболка", fit: "Regular Fit", sizes: ["S", "M", "L"], rows: [
+    ["Длина", 68, 71, 74],
+    ["Ширина груди", 48, 51, 54],
+    ["Плечи", 42, 44, 46],
+    ["Длина рукава", 20, 21, 22]
+  ] },
+  jeans: { title: "Джинсы", fit: "Bootcut / клёш", sizes: ["S", "M", "L"], rows: [
+    ["Обхват талии", 72, 78, 84],
+    ["Обхват бёдер", 100, 106, 112],
+    ["Длина по внешнему шву", 104, 106, 108],
+    ["Длина по внутреннему шву", 76, 78, 80],
+    ["Ширина низа штанины", 24, 25, 26]
+  ] },
+  hoodie: { title: "Худи", fit: "Regular Fit", sizes: ["S", "M", "L"], rows: [
+    ["Длина", 65, 68, 71],
+    ["Ширина груди", 52, 55, 58],
+    ["Плечи", 45, 47, 49],
+    ["Длина рукава", 62, 64, 66]
+  ] }
 };
 
 /* надписи на ленте вверху и запросы-подсказки в поиске */
@@ -434,7 +450,7 @@ const RIBBON = ["Гафаров", "Коллекция 01"];
 const POPULAR = ["Футболка", "Джинсы", "Худи", "Чёрная", "Белая", "Distress"];
 </script>
 <script src="products.js?v=mwoxzu6v"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 <script src="track.js?v=1" defer></script>
 </body>
 </html>
